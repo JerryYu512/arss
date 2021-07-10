@@ -1,0 +1,21 @@
+{
+    "project info": {
+        "name": "arss",
+        "author": "wotsen",
+        "creator": "wotsen",
+        "email": "astralrovers@outlook.com",
+        "contributor": {
+            "wotsen": "astralrovers@outlook.com"
+        },
+        "create date": "2021-07-10",
+        "copyrightTag": "MIT",
+        "project tool version": "",
+        "project version": "1.0.0",
+        "project language": "c++",
+        "project type": "lib",
+        "current platform": "x86",
+        "support platforms": {
+            "x86_64": "gcc"
+        }
+    }
+}
