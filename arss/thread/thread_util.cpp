@@ -28,7 +28,7 @@
  */
 #include "thread_util.hpp"
 
-namespace name {
+namespace arss {
 
 /**
  * @brief 绑定cpu
@@ -56,4 +56,4 @@ void thread_set_default_stacksize(uint64_t size) {
     return ;
 }
 
-} // namespace name
+} // namespace arss
