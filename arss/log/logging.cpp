@@ -60,7 +60,7 @@ __thread char t_time[64];
 __thread time_t t_lastSecond;
 
 const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {
-    "TRACE ", "DEBUG ", "INFO  ", "WARN  ", "ERROR ", "FATAL ",
+    "TRACE", "DEBUG", "INFO ", "WARN ", "ERROR", "FATAL",
 };
 
 const char* strerror_tl(int savedErrno) {
@@ -111,15 +111,17 @@ Logger::LogLevel g_logLevel = initLogLevel();
 Logger::Impl::Impl(LogLevel level, int savedErrno, const char* mname, const SourceFile& file, int line, const char *func)
     : time_(Timestamp::now()), stream_(), level_(level), line_(line), basename_(file) {
     formatTime();
-    stream_ << "[" << T(LogLevelName[level], 6) << "]";
+    stream_ << "[" << T(LogLevelName[level], strlen(LogLevelName[level])) << "]";
     thread::tid();
-    stream_ << "[" << T(thread::tidString(), thread::tidStringLength()) << "]";
+    if (thread::t_threadName) {
+        stream_ << "[" << thread::t_threadName << "]";
+    }
     stream_ << "[" << mname << "]";
     stream_ << "[" << basename_;
     if (func) {
         stream_ << ":" << func;
     }
-    stream_ << ":" << line_ << "]";
+    stream_ << ":" << line_ << "] ";
     if (savedErrno != 0) {
         stream_ << strerror_tl(savedErrno) << "(errno=" << savedErrno << ")";
     }
