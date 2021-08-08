@@ -81,8 +81,12 @@ install:
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss
 	mkdir -p $(MAKE_INSTALL_DIR)/lib
 
+ifeq ($(ENABLE_SHREAD_LIB), y)
 	cp -rf build/lib$(TARGET).so $(MAKE_INSTALL_DIR)/lib/
+endif
+ifeq ($(ENABLE_STATIC_LIB), y)
 	cp -rf build/lib$(TARGET).a $(MAKE_INSTALL_DIR)/lib/
+endif
 
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/atomic
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/co

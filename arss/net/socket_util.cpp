@@ -26,7 +26,6 @@
  * @copyright MIT License
  * 
  */
-#pragma once
 #include "socket_util.hpp"
 
 #include <errno.h>
