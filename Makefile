@@ -52,10 +52,10 @@ config: $(ROOT_DIR)/$(SRC_DIR)/configure.h.in
 $(CONFIG_HEADER):config
 
 $(TARGET): $(OBJECTS)
-ifeq ($(ENABLE_SHREAD_LIB))
+ifeq ($(ENABLE_SHREAD_LIB), y)
 	@$(CXX) $(SHAREDFLG) $(OBJECTS) -o build/lib$@.so $(SO_LIBS) $(LIBS_PATH)
 endif
-ifeq ($(ENABLE_STATIC_LIB))
+ifeq ($(ENABLE_STATIC_LIB), y)
 	@$(AR) build/lib$@.a $(OBJECTS)
 endif
 	@echo "\033[35m[---------- build lib success ----------]\033[0m"
