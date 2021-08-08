@@ -120,7 +120,7 @@ endif
 	cp -rf arss/ds/*.h* $(MAKE_INSTALL_DIR)/include/arss/ds/
 	cp -rf arss/encoding/*.h* $(MAKE_INSTALL_DIR)/include/arss/encoding/
 	cp -rf arss/err/*.h* $(MAKE_INSTALL_DIR)/include/arss/err/
-	cp -rf arss/event/*.h* $(MAKE_INSTALL_DIR)/include/arss/event/
+	# cp -rf arss/event/*.h* $(MAKE_INSTALL_DIR)/include/arss/event/
 	cp -rf arss/fs/*.h* $(MAKE_INSTALL_DIR)/include/arss/fs/
 	cp -rf arss/ini/*.h* $(MAKE_INSTALL_DIR)/include/arss/ini/
 	cp -rf arss/json/*.h* $(MAKE_INSTALL_DIR)/include/arss/json/
