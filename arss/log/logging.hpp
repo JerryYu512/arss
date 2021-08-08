@@ -96,7 +96,7 @@ private:
     class Impl {
     public:
         typedef Logger::LogLevel LogLevel;
-        Impl(LogLevel level, int old_errno, const char* mname, const SourceFile& file, int line);
+        Impl(LogLevel level, int old_errno, const char* mname, const SourceFile& file, int line, const char* func);
         void formatTime();
         void finish();
 

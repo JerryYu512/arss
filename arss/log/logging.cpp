@@ -108,15 +108,20 @@ Logger::FlushFunc g_flush = defaultFlush;
 TimeZone g_logTimeZone;
 Logger::LogLevel g_logLevel = initLogLevel();
 
-Logger::Impl::Impl(LogLevel level, int savedErrno, const char* mname, const SourceFile& file, int line)
+Logger::Impl::Impl(LogLevel level, int savedErrno, const char* mname, const SourceFile& file, int line, const char *func)
     : time_(Timestamp::now()), stream_(), level_(level), line_(line), basename_(file) {
     formatTime();
-    stream_ << mname << " ";
+    stream_ << "[" << T(LogLevelName[level], 6) << "]";
     thread::tid();
-    stream_ << T(thread::tidString(), thread::tidStringLength());
-    stream_ << T(LogLevelName[level], 6);
+    stream_ << "[" << T(thread::tidString(), thread::tidStringLength()) << "]";
+    stream_ << "[" << mname << "]";
+    stream_ << "[" << basename_;
+    if (func) {
+        stream_ << ":" << func;
+    }
+    stream_ << ":" << line_ << "]";
     if (savedErrno != 0) {
-        stream_ << strerror_tl(savedErrno) << " (errno=" << savedErrno << ") ";
+        stream_ << strerror_tl(savedErrno) << "(errno=" << savedErrno << ")";
     }
 }
 
@@ -134,7 +139,7 @@ void Logger::Impl::formatTime() {
             ::gmtime_r(&seconds, &tm_time);  // FIXME TimeZone::fromUtcTime
         }
 
-        int len = snprintf(t_time, sizeof(t_time), "%4d%02d%02d %02d:%02d:%02d",
+        int len = snprintf(t_time, sizeof(t_time), "%4d-%02d-%02d %02d:%02d:%02d",
                            tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
                            tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
         assert(len == 17);
@@ -142,29 +147,28 @@ void Logger::Impl::formatTime() {
     }
 
     if (g_logTimeZone.valid()) {
-        str::Fmt us(".%06d ", microseconds);
+        str::Fmt us(".%03d ", microseconds);
         assert(us.length() == 8);
         stream_ << T(t_time, 17) << T(us.data(), 8);
     } else {
-        str::Fmt us(".%06dZ ", microseconds);
+        str::Fmt us(".%03dZ ", microseconds);
         assert(us.length() == 9);
         stream_ << T(t_time, 17) << T(us.data(), 9);
     }
 }
 
-void Logger::Impl::finish() { stream_ << " - " << basename_ << ':' << line_ << '\n'; }
+void Logger::Impl::finish() { }
 
-Logger::Logger(const char* mname, SourceFile file, int line) : impl_(INFO, 0, mname, file, line) {}
+Logger::Logger(const char* mname, SourceFile file, int line) : impl_(INFO, 0, mname, file, line, nullptr) {}
 
 Logger::Logger(const char* mname, SourceFile file, int line, LogLevel level, const char* func)
-    : impl_(level, 0, mname, file, line) {
-    impl_.stream_ << func << ' ';
+    : impl_(level, 0, mname, file, line, func) {
 }
 
-Logger::Logger(const char* mname, SourceFile file, int line, LogLevel level) : impl_(level, 0, mname, file, line) {}
+Logger::Logger(const char* mname, SourceFile file, int line, LogLevel level) : impl_(level, 0, mname, file, line, nullptr) {}
 
 Logger::Logger(const char* mname, SourceFile file, int line, bool toAbort)
-    : impl_(toAbort ? FATAL : ERROR, errno, mname, file, line) {}
+    : impl_(toAbort ? FATAL : ERROR, errno, mname, file, line, nullptr) {}
 
 Logger::~Logger() {
     impl_.finish();
