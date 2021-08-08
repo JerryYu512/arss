@@ -7,6 +7,8 @@ ifneq ($(VERSION),)
 	RELEASE_VERSION = $(VERSION)
 endif
 
+MAKE_INSTALL_DIR = install
+
 # 调试模式使能
 DEBUG = n
 

@@ -52,8 +52,12 @@ config: $(ROOT_DIR)/$(SRC_DIR)/configure.h.in
 $(CONFIG_HEADER):config
 
 $(TARGET): $(OBJECTS)
+ifeq ($(ENABLE_SHREAD_LIB))
 	@$(CXX) $(SHAREDFLG) $(OBJECTS) -o build/lib$@.so $(SO_LIBS) $(LIBS_PATH)
+endif
+ifeq ($(ENABLE_STATIC_LIB))
 	@$(AR) build/lib$@.a $(OBJECTS)
+endif
 	@echo "\033[35m[---------- build lib success ----------]\033[0m"
 	@echo ""
 
@@ -71,6 +75,66 @@ ut: $(TARGET) $(UT_OBJECTS)
 # Doxygen文档
 .PHONY: api
 api:
+
+.PHONY: install
+install:
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss
+	mkdir -p $(MAKE_INSTALL_DIR)/lib
+
+	cp -rf build/lib$(TARGET).so $(MAKE_INSTALL_DIR)/lib/
+	cp -rf build/lib$(TARGET).a $(MAKE_INSTALL_DIR)/lib/
+
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/atomic
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/co
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/crypto
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/defs
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/ds
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/encoding
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/err
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/event
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/fs
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/ini
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/json
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/lock
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/log
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/mem
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/mix
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/net
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/os
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/plugin
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/process
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/pugixml
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/protocol
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/str
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/thread
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/time
+
+	cp -rf arss/atomic/*.h* $(MAKE_INSTALL_DIR)/include/arss/atomic/
+	cp -rf arss/co/*.h* $(MAKE_INSTALL_DIR)/include/arss/co/
+	cp -rf arss/crypto/*.h* $(MAKE_INSTALL_DIR)/include/arss/crypto/
+	cp -rf arss/defs/*.h* $(MAKE_INSTALL_DIR)/include/arss/defs/
+	cp -rf arss/ds/*.h* $(MAKE_INSTALL_DIR)/include/arss/ds/
+	cp -rf arss/encoding/*.h* $(MAKE_INSTALL_DIR)/include/arss/encoding/
+	cp -rf arss/err/*.h* $(MAKE_INSTALL_DIR)/include/arss/err/
+	cp -rf arss/event/*.h* $(MAKE_INSTALL_DIR)/include/arss/event/
+	cp -rf arss/fs/*.h* $(MAKE_INSTALL_DIR)/include/arss/fs/
+	cp -rf arss/ini/*.h* $(MAKE_INSTALL_DIR)/include/arss/ini/
+	cp -rf arss/json/*.h* $(MAKE_INSTALL_DIR)/include/arss/json/
+	cp -rf arss/lock/*.h* $(MAKE_INSTALL_DIR)/include/arss/lock/
+	cp -rf arss/log/*.h* $(MAKE_INSTALL_DIR)/include/arss/log/
+	cp -rf arss/mem/*.h* $(MAKE_INSTALL_DIR)/include/arss/mem/
+	cp -rf arss/mix/*.h* $(MAKE_INSTALL_DIR)/include/arss/mix/
+	cp -rf arss/net/*.h* $(MAKE_INSTALL_DIR)/include/arss/net/
+	cp -rf arss/os/*.h* $(MAKE_INSTALL_DIR)/include/arss/os/
+	cp -rf arss/plugin/*.h* $(MAKE_INSTALL_DIR)/include/arss/plugin/
+	cp -rf arss/process/*.h* $(MAKE_INSTALL_DIR)/include/arss/process/
+	cp -rf arss/pugixml/*.h* $(MAKE_INSTALL_DIR)/include/arss/pugixml/
+	cp -rf arss/protocol/*.h* $(MAKE_INSTALL_DIR)/include/arss/protocol/
+	cp -rf arss/str/*.h* $(MAKE_INSTALL_DIR)/include/arss/str/
+	cp -rf arss/thread/*.h* $(MAKE_INSTALL_DIR)/include/arss/thread/
+	cp -rf arss/time/*.* $(MAKE_INSTALL_DIR)/include/arss/time/
+	cp -rf arss/arss.hpp $(MAKE_INSTALL_DIR)/include/arss/
+	cp -rf build/configure.h $(MAKE_INSTALL_DIR)/include/arss/
 
 # 打包
 .PHONY: pack
