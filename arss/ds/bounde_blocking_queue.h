@@ -35,7 +35,7 @@ namespace arss {
 
 namespace ds {
 
-template <typename T, uint16_t size=512>
+template <typename T, size_t ssize=512>
 class BoundedBlockingQueue : noncopyable {
 public:
     explicit BoundedBlockingQueue()
@@ -97,7 +97,7 @@ private:
     mutable MutexLock mutex_;
     Condition notEmpty_ GUARDED_BY(mutex_);
     Condition notFull_ GUARDED_BY(mutex_);
-    Circular_Buffer<T, size> queue_ GUARDED_BY(mutex_);
+    jm::circular_buffer<T, ssize> queue_ GUARDED_BY(mutex_);
 };
 
 }  // namespace ds

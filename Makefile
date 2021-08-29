@@ -98,6 +98,7 @@ endif
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/event
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/fs
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/ini
+	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/flag
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/json
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/lock
 	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/log
@@ -123,6 +124,7 @@ endif
 	# cp -rf arss/event/*.h* $(MAKE_INSTALL_DIR)/include/arss/event/
 	cp -rf arss/fs/*.h* $(MAKE_INSTALL_DIR)/include/arss/fs/
 	cp -rf arss/ini/*.h* $(MAKE_INSTALL_DIR)/include/arss/ini/
+	cp -rf arss/flag/*.h* $(MAKE_INSTALL_DIR)/include/arss/flag/
 	cp -rf arss/json/*.h* $(MAKE_INSTALL_DIR)/include/arss/json/
 	cp -rf arss/lock/*.h* $(MAKE_INSTALL_DIR)/include/arss/lock/
 	cp -rf arss/log/*.h* $(MAKE_INSTALL_DIR)/include/arss/log/
@@ -136,7 +138,7 @@ endif
 	cp -rf arss/protocol/*.h* $(MAKE_INSTALL_DIR)/include/arss/protocol/
 	cp -rf arss/str/*.h* $(MAKE_INSTALL_DIR)/include/arss/str/
 	cp -rf arss/thread/*.h* $(MAKE_INSTALL_DIR)/include/arss/thread/
-	cp -rf arss/time/*.* $(MAKE_INSTALL_DIR)/include/arss/time/
+	cp -rf arss/time/*.h* $(MAKE_INSTALL_DIR)/include/arss/time/
 	cp -rf arss/arss.hpp $(MAKE_INSTALL_DIR)/include/arss/
 	cp -rf build/configure.h $(MAKE_INSTALL_DIR)/include/arss/
 

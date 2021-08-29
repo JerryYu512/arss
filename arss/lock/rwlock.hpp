@@ -111,4 +111,34 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RwMutex);
 };
 
+class RMutexGuard {
+public:
+    explicit RMutexGuard(RwMutex& lock) : _lock(lock) { _lock.rlock(); }
+    explicit RMutexGuard(RwMutex* lock) : _lock(*lock) { _lock.rlock(); }
+
+    ~RMutexGuard() { _lock.unlock(); }
+
+    void lock() { _lock.rlock(); }
+    void unlock() { _lock.unlock(); }
+
+private:
+    RwMutex& _lock;
+    DISALLOW_COPY_AND_ASSIGN(RMutexGuard);
+};
+
+class WMutexGuard {
+public:
+    explicit WMutexGuard(RwMutex& lock) : _lock(lock) { _lock.wlock(); }
+    explicit WMutexGuard(RwMutex* lock) : _lock(*lock) { _lock.wlock(); }
+
+    ~WMutexGuard() { _lock.unlock(); }
+
+    void lock() { _lock.wlock(); }
+    void unlock() { _lock.unlock(); }
+
+private:
+    RwMutex& _lock;
+    DISALLOW_COPY_AND_ASSIGN(WMutexGuard);
+};
+
 } // namespace arss

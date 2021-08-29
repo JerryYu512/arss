@@ -71,7 +71,7 @@ Logger::LogLevel initLogLevel() {
     if (::getenv("MUDUO_LOG_TRACE"))
         return Logger::TRACE;
     else if (::getenv("MUDUO_LOG_DEBUG"))
-        return Logger::DEBUG;
+        return Logger::LOG_LV_DEBUG;
     else
         return Logger::INFO;
 }
@@ -144,18 +144,15 @@ void Logger::Impl::formatTime() {
         int len = snprintf(t_time, sizeof(t_time), "%4d-%02d-%02d %02d:%02d:%02d",
                            tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
                            tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
-        assert(len == 17);
         (void)len;
     }
 
     if (g_logTimeZone.valid()) {
         str::Fmt us(".%03d ", microseconds);
-        assert(us.length() == 8);
-        stream_ << T(t_time, 17) << T(us.data(), 8);
+        stream_ << T(t_time, strlen(t_time)) << T(us.data(), strlen(us.data()));
     } else {
         str::Fmt us(".%03dZ ", microseconds);
-        assert(us.length() == 9);
-        stream_ << T(t_time, 17) << T(us.data(), 9);
+        stream_ << T(t_time, strlen(t_time)) << T(us.data(), strlen(us.data()));
     }
 }
 

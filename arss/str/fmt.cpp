@@ -29,6 +29,8 @@
 #include "fmt.hpp"
 #include <memory>
 #include <stdarg.h>
+#include <stdint.h>
+#include "arss/defs/defs.hpp"
 
 namespace arss {
 
@@ -197,6 +199,113 @@ std::string Fmt::format(const char *fmt, ...) {
         break;
     }
     return base;
+}
+
+bool to_bool(const char* s) {
+    if (strcmp(s, "false") == 0 || strcmp(s, "0") == 0) return false;
+    if (strcmp(s, "true") == 0 || strcmp(s, "1") == 0) return true;
+    return false;
+}
+
+int32_t to_int32(const char* s) {
+    int64_t x = to_int64(s);
+    if (unlikely(x > INT32_MAX || x < INT32_MIN)) {
+        return 0;
+    }
+    return (int32_t)x;
+}
+
+uint32_t to_uint32(const char* s) {
+    int64_t x = (int64_t) to_uint64(s);
+    int64_t absx = x < 0 ? -x : x;
+    if (unlikely(absx > UINT32_MAX)) {
+        return 0;
+    }
+    return (uint32_t)x;
+}
+
+inline int _Shift(char c) {
+    switch (c) {
+      case 'k':
+      case 'K':
+        return 10;
+      case 'm':
+      case 'M':
+        return 20;
+      case 'g':
+      case 'G':
+        return 30;
+      case 't':
+      case 'T':
+        return 40;
+      case 'p':
+      case 'P':
+        return 50;
+      default:
+        return 0;
+    }
+}
+
+int64_t to_int64(const char* s) {
+    if (!*s) return 0;
+
+    char* end = 0;
+    errno = 0;
+    int64_t x = strtoll(s, &end, 0);
+    if (errno != 0) return 0;
+
+    size_t n = strlen(s);
+    if (end == s + n) return x;
+
+    if (end == s + n - 1) {
+        int shift = _Shift(s[n - 1]);
+        if (shift != 0) {
+            if (x == 0) return 0;
+            if (x < (INT64_MIN >> shift) || x > (INT64_MAX >> shift)) {
+                return 0;
+            }
+            return x << shift;
+        }
+    }
+
+    return 0;
+}
+
+uint64_t to_uint64(const char* s) {
+    if (!*s) return 0;
+
+    char* end = 0;
+    errno = 0;
+    uint64_t x = strtoull(s, &end, 0);
+    if (errno != 0) return 0;
+
+    size_t n = strlen(s);
+    if (end == s + n) return x;
+
+    if (end == s + n - 1) {
+        int shift = _Shift(s[n - 1]);
+        if (shift != 0) {
+            if (x == 0) return 0;
+            int64_t absx = (int64_t)x;
+            if (absx < 0) absx = -absx;
+            if (absx > static_cast<int64_t>(UINT64_MAX >> shift)) {
+                return 0;
+            }
+            return x << shift;
+        }
+    }
+
+    return 0;
+}
+
+double to_double(const char* s) {
+    char* end = 0;
+    errno = 0;
+    double x = strtod(s, &end);
+    if (errno != 0) return 0;
+
+    if (end == s + strlen(s)) return x;
+    return 0;
 }
 
 } // namespace str

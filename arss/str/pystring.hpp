@@ -38,9 +38,7 @@
 #include <vector>
 #include <map>
 
-namespace ars {
-
-namespace sdk {
+namespace arss {
 
 /// 留白字符
 #define ARS_SPACE_CHARS     " \t\r\n"
@@ -48,8 +46,6 @@ namespace sdk {
 #define ARS_PAIR_CHARS      "{}[]()<>\"\"\'\'``"
 
 typedef std::map<std::string, std::string> KeyValue;
-
-} // namspace sdk
 
 } // namespace ars
 
@@ -107,6 +103,7 @@ namespace pystring
     /// in slice notation. Return -1 if sub is not found.
     ///
     int find( const std::string & str, const std::string & sub, int start = 0, int end = MAX_32BIT_INT  );
+    int find_not_of( const std::string & str, const std::string & sub, int start = 0, int end = MAX_32BIT_INT  );
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// @brief Synonym of find right now. Python version throws exceptions. This one currently doesn't
@@ -258,7 +255,7 @@ namespace pystring
     void splitlines(  const std::string & str, std::vector< std::string > & result, bool keepends = false );
 
     // user=amdin&pswd=123456
-    ars::sdk::KeyValue splitKV(const std::string& str, char kv_kv = '&', char k_v = '=');
+    arss::KeyValue splitKV(const std::string& str, char kv_kv = '&', char k_v = '=');
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /// @brief Return True if string starts with the prefix, otherwise return False. With optional start,

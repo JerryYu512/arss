@@ -71,6 +71,11 @@ public:
         }
         fp_.type = type;
         op_ = &File::fops[type];
+        if (fp_.type == FILE_BACKEND_FIO) {
+            fp_.fd.fp = nullptr;
+        } else {
+            fp_.fd.fd = -1;
+        }
     }
 
     ~File() { close(); }
@@ -84,9 +89,9 @@ public:
         }
         fp_ = op_->open(filepath, mode);
         if (fp_.type == FILE_BACKEND_FIO) {
-            return fp_.fd.fp ? 0 : errno;
+            return fp_.fd.fp ? 0 : -1;
         } else {
-            return fp_.fd.fd >= 0 ? 0 : errno;
+            return fp_.fd.fd >= 0 ? 0 : -1;
         }
     }
 

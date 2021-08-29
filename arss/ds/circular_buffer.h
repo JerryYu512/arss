@@ -1,637 +1,692 @@
 /*
-  MIT License
-  Copyright (c) 2018 Antonio Alexander Brewer (tonton81) - https://github.com/tonton81
-  Contributors:
-  Tim - https://github.com/Defragster
-  Mike - https://github.com/mjs513
-  Designed and tested for PJRC Teensy 3.2, 3.5, and 3.6 boards.
-  May or may not work on other microcontrollers, support for them will not be provided.
-  Use at your own risk.
-  Forum link : https://forum.pjrc.com/threads/50395-Circular_Buffer
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  SOFTWARE.
-*/
+ * Copyright 2017 Justas Masiulis
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#ifndef CIRCULAR_BUFFER_H
-#define CIRCULAR_BUFFER_H
+#ifndef JM_CIRCULAR_BUFFER_HPP
+#define JM_CIRCULAR_BUFFER_HPP
+
+#include <iterator>
 #include <algorithm>
-#include <stdint.h>
+#include <stdexcept>
 
-template <typename T, uint16_t _size, uint16_t multi = 0>
-class Circular_Buffer {
-public:
-    void push_back(T value) { return write(value); }
-    void push_front(T value);
-    T pop_front() { return read(); }
-    T pop_back();
-    void write(T value);
-    void push_back(const T *buffer, uint16_t length) { write(buffer, length); }
-    void write(const T *buffer, uint16_t length);
-    void push_front(const T *buffer, uint16_t length);
-    T peek(uint16_t pos = 0);
-    T peekBytes(T *buffer, uint16_t length);
-    T read();
-    T pop_front(T *buffer, uint16_t length) { return readBytes(buffer, length); }
-    T peek_front(T *buffer, uint16_t length, uint32_t entry = 0);
-    T read(T *buffer, uint16_t length) { return readBytes(buffer, length); }
-    T readBytes(T *buffer, uint16_t length);
-    void flush() { clear(); }
-    void clear() { head = tail = _available = 0; }
-    void print(const char *p);
-    void println(const char *p);
-    uint16_t size() { return _available; }
-    uint16_t available() { return _available; }
-    uint16_t capacity() { return _size; }
-    uint16_t length_back() {
-        return (((int)_cabuf[((head + size() - 1) & (_size - 1))][0] << 8 * sizeof(T)) |
-                (int)_cabuf[((head + size() - 1) & (_size - 1))][1]);
-    }
-    uint16_t length_front() {
-        return (((int)_cabuf[((head) & (_size - 1))][0] << 8 * sizeof(T)) |
-                (int)_cabuf[((head) & (_size - 1))][1]);
-    }
-    T list();
-    T variance();
-    T deviation();
-    T average();
-    bool remove(uint16_t pos);
-    T median(bool override = 0);
-    void sort_ascending();
-    void sort_descending();
-    T sum();
-    T min();
-    T max();
-    T mean() { return average(); }
-    T max_size() { return multi; }
-    T pop_back(T *buffer, uint16_t length);
-    T *peek_front() { return front(); }
-    T *peek_back() { return back(); }
-    T *front() { return _cabuf[((head) & (_size - 1))] + 2; }
-    T *back() { return _cabuf[((tail - 1) & (_size - 1))] + 2; }
-    bool replace(T *buffer, uint16_t length, int pos1, int pos2, int pos3, int pos4 = -1,
-                 int pos5 = -1);
-    bool isEqual(const T *buffer);
-    bool find(T *buffer, uint16_t length, int pos1, int pos2, int pos3, int pos4 = -1,
-              int pos5 = -1);
-    bool findRemove(T *buffer, uint16_t length, int pos1, int pos2, int pos3, int pos4 = -1,
-                    int pos5 = -1);
-    T operator[](uint32_t idx);
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+#include <type_traits>
+#include <initializer_list>
+#endif // !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
 
-protected:
-private:
-    volatile uint16_t head = 0;
-    volatile uint16_t tail = 0;
-    volatile uint16_t _available = 0;
 
-    T _cbuf[_size];
-    T _cabuf[_size][multi + 2];
-};
+#ifndef JM_CIRCULAR_BUFFER_CXX_OLD
+#define JM_CB_CONSTEXPR constexpr
+#define JM_CB_NOEXCEPT noexcept
+#define JM_CB_NULLPTR nullptr
+#define JM_CB_ADDRESSOF(x) ::std::addressof(x)
+#define JM_CB_IS_TRIVIALLY_DESTRUCTIBLE(type) \
+    ::std::is_trivially_destructible<type>::value
+#else
+#define JM_CB_CONSTEXPR
+#define JM_CB_NOEXCEPT
+#define JM_CB_NULLPTR NULL
+#define JM_CB_ADDRESSOF(x) &(x)
+#define JM_CB_IS_TRIVIALLY_DESTRUCTIBLE(type) false
+#endif
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::operator[](uint32_t idx) {
-    if (multi) {
-        return 0;
-    }
-    return _cbuf[((head + idx) & (_size - 1))];
-}
+#ifdef JM_CIRCULAR_BUFFER_CXX14
+#define JM_CB_CXX14_CONSTEXPR constexpr
+#define JM_CB_CXX14_INIT_0 = 0
+#else
+#define JM_CB_CXX14_CONSTEXPR
+#define JM_CB_CXX14_INIT_0
+#endif
 
-template <typename T, uint16_t _size, uint16_t multi>
-bool Circular_Buffer<T, _size, multi>::remove(uint16_t pos) {
-    if (multi) {
-        if (pos >= _size) return 0;
+#if defined(__GNUC__)
+#define JM_CB_LIKELY(x) __builtin_expect(x, 1)
+#define JM_CB_UNLIKELY(x) __builtin_expect(x, 0)
+#elif defined(__clang__) && !defined(__c2__) && defined(__has_builtin)
+#if __has_builtin(__builtin_expect)
+#define JM_CB_LIKELY(x) __builtin_expect(x, 1)
+#define JM_CB_UNLIKELY(x) __builtin_expect(x, 0)
+#endif
+#endif
 
-        int32_t find_area = -1;
 
-        for (uint16_t i = 0; i < _size; i++) {
-            if (((head + i) & (_size - 1)) == pos) {
-                find_area = i;
-                break;
+#ifndef JM_CB_LIKELY
+#define JM_CB_LIKELY(expr) (expr)
+#endif // !JM_CB_LIKELY
+
+
+#ifndef JM_CB_UNLIKELY
+#define JM_CB_UNLIKELY(expr) (expr)
+#endif // !JM_CB_LIKELY
+
+
+#if defined(JM_CIRCULAR_BUFFER_LIKELY_FULL) // optimization if you know if the buffer will
+                                            // likely be full or not
+#define JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(expr) JM_CB_LIKELY(expr)
+#elif defined(JM_CIRCULAR_BUFFER_UNLIKELY_FULL)
+#define JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(expr) JM_CB_UNLIKELY(expr)
+#else
+#define JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(expr) expr
+#endif
+
+
+namespace jm {
+
+    namespace detail {
+
+        template<class size_type, size_type N>
+        struct cb_index_wrapper {
+            inline static JM_CB_CONSTEXPR size_type increment(size_type value)
+                JM_CB_NOEXCEPT
+            {
+                return (value + 1) % N;
             }
-        }
-        if (find_area == -1) return 0;
 
-        while (((head + find_area) & (_size - 1)) != ((head) & (_size - 1))) {
-            memmove(_cabuf[((head + find_area) & (_size - 1))],
-                    _cabuf[((head + find_area - 1) & (_size - 1))], (2 + multi) * sizeof(T));
-            find_area--;
-        }
-        head = ((head + 1) & (2 * _size - 1));
-        _available--;
-        return 1;
-    }
-    return 0;
-}
+            inline static JM_CB_CONSTEXPR size_type decrement(size_type value)
+                JM_CB_NOEXCEPT
+            {
+                return (value + N - 1) % N;
+            }
+        };
 
-template <typename T, uint16_t _size, uint16_t multi>
-bool Circular_Buffer<T, _size, multi>::findRemove(T *buffer, uint16_t length, int pos1, int pos2,
-                                                  int pos3, int pos4, int pos5) {
-    uint8_t input_count = 3;
-    int32_t found = -1;
-    if (pos4 != -1) input_count = 4;
-    if (pos5 != -1) input_count = 5;
-    for (uint16_t j = 0; j < _available; j++) {
-        switch (input_count) {
-            case 3: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3]) {
-                    found = j;
-                    break;
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        template<class T>
+        constexpr typename std::conditional<(!std::is_nothrow_move_assignable<T>::value &&
+                                             std::is_copy_assignable<T>::value),
+                                            const T&,
+                                            T&&>::type
+        move_if_noexcept_assign(T& arg) noexcept
+        {
+            return (std::move(arg));
+        }
+
+        template<class T, bool = JM_CB_IS_TRIVIALLY_DESTRUCTIBLE(T)>
+        union optional_storage {
+            struct empty_t {
+            };
+
+            empty_t _empty;
+            T       _value;
+
+            inline explicit JM_CB_CONSTEXPR optional_storage() JM_CB_NOEXCEPT : _empty()
+            {}
+
+            inline explicit JM_CB_CONSTEXPR
+            optional_storage(const T& value) JM_CB_NOEXCEPT : _value(value)
+            {}
+
+            inline explicit constexpr optional_storage(T&& value)
+                : _value(std::move(value))
+            {}
+
+            ~optional_storage() {}
+        };
+
+        template<class T>
+        union optional_storage<T, true /* trivially destructible */> {
+            struct empty_t {
+            };
+
+            empty_t _empty;
+            T       _value;
+
+            inline explicit JM_CB_CONSTEXPR optional_storage() JM_CB_NOEXCEPT : _empty()
+            {}
+
+            inline explicit JM_CB_CONSTEXPR
+            optional_storage(const T& value) JM_CB_NOEXCEPT : _value(value)
+            {}
+            inline explicit constexpr optional_storage(T&& value)
+                : _value(std::move(value))
+            {}
+
+            ~optional_storage() = default;
+        };
+
+#else
+
+        template<class T>
+        union optional_storage {
+            alignas(T) char _value[sizeof(T)];
+            T _value;
+
+            inline explicit JM_CB_CONSTEXPR optional_storage() JM_CB_NOEXCEPT : _empty()
+            {}
+
+            inline explicit JM_CB_CONSTEXPR
+            optional_storage(const T& value) JM_CB_NOEXCEPT : _value(value)
+            {}
+
+            ~optional_storage() {}
+
+            inline explicit constexpr optional_storage(T&& value)
+                : _value(std::move(value))
+            {}
+        };
+
+#endif
+
+        template<class S, class TC, std::size_t N>
+        class cb_iterator {
+            template<class, class, std::size_t>
+            friend class cb_iterator;
+
+            S*          _buf;
+            std::size_t _pos;
+            std::size_t _left_in_forward;
+
+            typedef detail::cb_index_wrapper<std::size_t, N> wrapper_t;
+
+        public:
+            typedef std::bidirectional_iterator_tag iterator_category;
+            typedef TC                              value_type;
+            typedef std::ptrdiff_t                  difference_type;
+            typedef value_type*                     pointer;
+            typedef value_type&                     reference;
+
+            explicit JM_CB_CONSTEXPR cb_iterator() JM_CB_NOEXCEPT : _buf(JM_CB_NULLPTR),
+                                                                    _pos(0),
+                                                                    _left_in_forward(0)
+            {}
+
+            explicit JM_CB_CONSTEXPR
+            cb_iterator(S*          buf,
+                        std::size_t pos,
+                        std::size_t left_in_forward) JM_CB_NOEXCEPT
+                : _buf(buf),
+                  _pos(pos),
+                  _left_in_forward(left_in_forward)
+            {}
+
+            template<class TSnc, class Tnc>
+            JM_CB_CONSTEXPR
+            cb_iterator(const cb_iterator<TSnc, Tnc, N>& other) JM_CB_NOEXCEPT
+                : _buf(other._buf),
+                  _pos(other._pos),
+                  _left_in_forward(other._left_in_forward)
+            {}
+
+            template<class TSnc, class Tnc>
+            JM_CB_CXX14_CONSTEXPR cb_iterator&
+                                  operator=(const cb_iterator<TSnc, Tnc, N>& other) JM_CB_NOEXCEPT
+            {
+                _buf             = other._buf;
+                _pos             = other._pos;
+                _left_in_forward = other._left_in_forward;
+                return *this;
+            };
+
+
+            JM_CB_CONSTEXPR reference operator*() const JM_CB_NOEXCEPT
+            {
+                return (_buf + _pos)->_value;
+            }
+
+            JM_CB_CONSTEXPR pointer operator->() const JM_CB_NOEXCEPT
+            {
+                return JM_CB_ADDRESSOF((_buf + _pos)->_value);
+            }
+
+            JM_CB_CXX14_CONSTEXPR cb_iterator& operator++() JM_CB_NOEXCEPT
+            {
+                _pos = wrapper_t::increment(_pos);
+                --_left_in_forward;
+                return *this;
+            }
+
+            JM_CB_CXX14_CONSTEXPR cb_iterator& operator--() JM_CB_NOEXCEPT
+            {
+                _pos = wrapper_t::decrement(_pos);
+                ++_left_in_forward;
+                return *this;
+            }
+
+            JM_CB_CXX14_CONSTEXPR cb_iterator operator++(int)JM_CB_NOEXCEPT
+            {
+                cb_iterator temp = *this;
+                _pos             = wrapper_t::increment(_pos);
+                --_left_in_forward;
+                return temp;
+            }
+
+            JM_CB_CXX14_CONSTEXPR cb_iterator operator--(int)JM_CB_NOEXCEPT
+            {
+                cb_iterator temp = *this;
+                _pos             = wrapper_t::decrement(_pos);
+                ++_left_in_forward;
+                return temp;
+            }
+
+            template<class Tx, class Ty>
+            JM_CB_CONSTEXPR bool
+            operator==(const cb_iterator<Tx, Ty, N>& lhs) const JM_CB_NOEXCEPT
+            {
+                return lhs._left_in_forward == _left_in_forward && lhs._pos == _pos &&
+                       lhs._buf == _buf;
+            }
+
+            template<typename Tx, typename Ty>
+            JM_CB_CONSTEXPR bool
+            operator!=(const cb_iterator<Tx, Ty, N>& lhs) const JM_CB_NOEXCEPT
+            {
+                return !(operator==(lhs));
+            }
+        };
+
+    } // namespace detail
+
+
+    template<typename T, std::size_t N>
+    class circular_buffer {
+    public:
+        typedef T                                                      value_type;
+        typedef std::size_t                                            size_type;
+        typedef std::ptrdiff_t                                         difference_type;
+        typedef T&                                                     reference;
+        typedef const T&                                               const_reference;
+        typedef T*                                                     pointer;
+        typedef const T*                                               const_pointer;
+        typedef detail::cb_iterator<detail::optional_storage<T>, T, N> iterator;
+        typedef detail::cb_iterator<const detail::optional_storage<T>, const T, N>
+                                                      const_iterator;
+        typedef std::reverse_iterator<iterator>       reverse_iterator;
+        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+    private:
+        typedef detail::cb_index_wrapper<size_type, N> wrapper_t;
+        typedef detail::optional_storage<T>            storage_type;
+
+        size_type    _head;
+        size_type    _tail;
+        size_type    _size;
+        storage_type _buffer[N];
+
+        inline void destroy(size_type idx) JM_CB_NOEXCEPT { _buffer[idx]._value.~T(); }
+
+        inline void copy_buffer(const circular_buffer& other)
+        {
+            const_iterator       first = other.cbegin();
+            const const_iterator last  = other.cend();
+
+            for(; first != last; ++first)
+                push_back(*first);
+        }
+
+
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        inline void move_buffer(circular_buffer&& other)
+        {
+            iterator       first = other.begin();
+            const iterator last  = other.end();
+
+            for(; first != last; ++first)
+                emplace_back(std::move(*first));
+        }
+
+#endif // !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+    public:
+        JM_CB_CONSTEXPR explicit circular_buffer()
+            : _head(1), _tail(0), _size(0), _buffer()
+        {}
+
+#if defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+        explicit
+#endif
+            circular_buffer(size_type count, const T& value = T())
+            : _head(0), _tail(count - 1), _size(count), _buffer()
+        {
+            if(JM_CB_UNLIKELY(_size > N))
+                throw std::out_of_range(
+                    "circular_buffer<T, N>(size_type count, const T&) count exceeded N");
+
+            if(JM_CB_LIKELY(_size != 0))
+                for(size_type i = 0; i < count; ++i)
+                    new(JM_CB_ADDRESSOF(_buffer[i]._value)) T(value);
+            else
+                _head = 1;
+        }
+
+        template<typename InputIt>
+        circular_buffer(InputIt first, InputIt last)
+            : _head(0), _tail(0), _size(0), _buffer()
+        {
+            if(first != last) {
+                for(; first != last; ++first, ++_size) {
+                    if(JM_CB_UNLIKELY(_size >= N))
+                        throw std::out_of_range(
+                            "circular_buffer<T, N>(InputIt first, InputIt last) distance exceeded N");
+
+                    new(JM_CB_ADDRESSOF(_buffer[_size]._value)) T(*first);
                 }
+
+                _tail = _size - 1;
             }
-            case 4: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4]) {
-                    found = j;
-                    break;
-                }
+            else
+                _head = 1;
+        }
+
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        circular_buffer(std::initializer_list<T> init)
+            : _head(0), _tail(init.size() - 1), _size(init.size()), _buffer()
+        {
+            if(JM_CB_UNLIKELY(_size > N))
+                throw std::out_of_range(
+                    "circular_buffer<T, N>(std::initializer_list<T> init) init.size() > N");
+
+            if(JM_CB_UNLIKELY(_size == 0))
+                _head = 1;
+
+            storage_type* buf_ptr = _buffer;
+            for(auto it = init.begin(), end = init.end(); it != end; ++it, ++buf_ptr)
+                new(JM_CB_ADDRESSOF(buf_ptr->_value)) T(*it);
+        }
+
+#endif // !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        circular_buffer(const circular_buffer& other)
+            : _head(1), _tail(0), _size(0), _buffer()
+        {
+            copy_buffer(other);
+        }
+
+        circular_buffer& operator=(const circular_buffer& other)
+        {
+            clear();
+            copy_buffer(other);
+            return *this;
+        }
+
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        circular_buffer(circular_buffer&& other) : _head(1), _tail(0), _size(0), _buffer()
+        {
+            move_buffer(std::move(other));
+        }
+
+        circular_buffer& operator=(circular_buffer&& other)
+        {
+            clear();
+            move_buffer(std::move(other));
+            return *this;
+        }
+
+#endif // !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        ~circular_buffer() { clear(); }
+
+        /// capacity
+        JM_CB_CONSTEXPR bool empty() const JM_CB_NOEXCEPT { return _size == 0; }
+
+        JM_CB_CONSTEXPR bool full() const JM_CB_NOEXCEPT { return _size == N; }
+
+        JM_CB_CONSTEXPR size_type size() const JM_CB_NOEXCEPT { return _size; }
+
+        JM_CB_CONSTEXPR size_type max_size() const JM_CB_NOEXCEPT { return N; }
+
+        /// element access
+        JM_CB_CXX14_CONSTEXPR reference front() JM_CB_NOEXCEPT
+        {
+            return _buffer[_head]._value;
+        }
+
+        JM_CB_CONSTEXPR const_reference front() const JM_CB_NOEXCEPT
+        {
+            return _buffer[_head]._value;
+        }
+
+        JM_CB_CXX14_CONSTEXPR reference back() JM_CB_NOEXCEPT
+        {
+            return _buffer[_tail]._value;
+        }
+
+        JM_CB_CONSTEXPR const_reference back() const JM_CB_NOEXCEPT
+        {
+            return _buffer[_tail]._value;
+        }
+
+        JM_CB_CXX14_CONSTEXPR pointer data() JM_CB_NOEXCEPT
+        {
+            return JM_CB_ADDRESSOF(_buffer[0]._value);
+        }
+
+        JM_CB_CONSTEXPR const_pointer data() const JM_CB_NOEXCEPT
+        {
+            return JM_CB_ADDRESSOF(_buffer[0]._value);
+        }
+
+        /// modifiers
+        void push_back(const value_type& value)
+        {
+            size_type new_tail;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_tail = _head;
+                _head    = wrapper_t::increment(_head);
+                --_size;
+                _buffer[new_tail]._value = value;
             }
-            case 5: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4] &&
-                    _cabuf[((head + j) & (_size - 1))][pos5 + 2] == buffer[pos5]) {
-                    found = j;
-                    break;
-                }
+            else {
+                new_tail = wrapper_t::increment(_tail);
+                new(JM_CB_ADDRESSOF(_buffer[new_tail]._value)) T(value);
             }
-        }
-        if (found >= 0) {
-            remove(found);
-            return 1;
-        }
-    }
-    return 0;
-}
 
-template <typename T, uint16_t _size, uint16_t multi>
-bool Circular_Buffer<T, _size, multi>::find(T *buffer, uint16_t length, int pos1, int pos2,
-                                            int pos3, int pos4, int pos5) {
-    uint8_t input_count = 3;
-    bool found = 0;
-    if (pos4 != -1) input_count = 4;
-    if (pos5 != -1) input_count = 5;
-    for (uint16_t j = 0; j < _available; j++) {
-        switch (input_count) {
-            case 3: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3]) {
-                    found = 1;
-                    break;
-                }
+            _tail = new_tail;
+            ++_size;
+        }
+
+        void push_front(const value_type& value)
+        {
+            size_type new_head = 0;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_head = _tail;
+                _tail    = wrapper_t::decrement(_tail);
+                --_size;
+                _buffer[new_head]._value = value;
             }
-            case 4: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4]) {
-                    found = 1;
-                    break;
-                }
+            else {
+                new_head = wrapper_t::decrement(_head);
+                new(JM_CB_ADDRESSOF(_buffer[new_head]._value)) T(value);
             }
-            case 5: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4] &&
-                    _cabuf[((head + j) & (_size - 1))][pos5 + 2] == buffer[pos5]) {
-                    found = 1;
-                    break;
-                }
+
+            _head = new_head;
+            ++_size;
+        }
+
+#if !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
+
+        void push_back(value_type&& value)
+        {
+            size_type new_tail;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_tail = _head;
+                _head    = wrapper_t::increment(_head);
+                --_size;
+                _buffer[new_tail]._value = detail::move_if_noexcept_assign(value);
             }
-        }
-        if (found) {
-            memmove(buffer, _cabuf[((head + j) & (_size - 1))] + 2, length * sizeof(T));
-            break;
-        }
-    }
-    return found;
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-bool Circular_Buffer<T, _size, multi>::replace(T *buffer, uint16_t length, int pos1, int pos2,
-                                               int pos3, int pos4, int pos5) {
-    uint8_t input_count = 3;
-    bool found = 0;
-    if (pos4 != -1) input_count = 4;
-    if (pos5 != -1) input_count = 5;
-    for (uint16_t j = 0; j < _available; j++) {
-        switch (input_count) {
-            case 3: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3]) {
-                    found = 1;
-                    break;
-                }
+            else {
+                new_tail = wrapper_t::increment(_tail);
+                new(JM_CB_ADDRESSOF(_buffer[new_tail]._value))
+                    T(std::move_if_noexcept(value));
             }
-            case 4: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4]) {
-                    found = 1;
-                    break;
-                }
+
+            _tail = new_tail;
+            ++_size;
+        }
+
+        void push_front(value_type&& value)
+        {
+            size_type new_head = 0;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_head = _tail;
+                _tail    = wrapper_t::decrement(_tail);
+                --_size;
+                _buffer[new_head]._value = detail::move_if_noexcept_assign(value);
             }
-            case 5: {
-                if (_cabuf[((head + j) & (_size - 1))][pos1 + 2] == buffer[pos1] &&
-                    _cabuf[((head + j) & (_size - 1))][pos2 + 2] == buffer[pos2] &&
-                    _cabuf[((head + j) & (_size - 1))][pos3 + 2] == buffer[pos3] &&
-                    _cabuf[((head + j) & (_size - 1))][pos4 + 2] == buffer[pos4] &&
-                    _cabuf[((head + j) & (_size - 1))][pos5 + 2] == buffer[pos5]) {
-                    found = 1;
-                    break;
-                }
+            else {
+                new_head = wrapper_t::decrement(_head);
+                new(JM_CB_ADDRESSOF(_buffer[new_head]._value))
+                    T(std::move_if_noexcept(value));
             }
-        }
-        if (found) {
-            _cabuf[((head + j) & (_size - 1))][0] = length & 0xFF00;
-            _cabuf[((head + j) & (_size - 1))][1] = length & 0xFF;
-            memmove(_cabuf[((head + j) & (_size - 1))] + 2, buffer, length * sizeof(T));
-            break;
-        }
-    }
-    return found;
-}
 
-template <typename T, uint16_t _size, uint16_t multi>
-bool Circular_Buffer<T, _size, multi>::isEqual(const T *buffer) {
-    if (multi) {
-        bool success = 1;
-        for (uint16_t j = 0; j < _available; j++) {
-            success = 1;
-            for (uint16_t k = 0; k < (_cabuf[((head + j) & (_size - 1))][0] |
-                                      _cabuf[((head + j) & (_size - 1))][1]);
-                 k++) {
-                if (_cabuf[((head + j) & (_size - 1))][k + 2] != buffer[k]) {
-                    success = 0;
-                    break;
-                }
+            _head = new_head;
+            ++_size;
+        }
+
+        template<typename... Args>
+        void emplace_back(Args&&... args)
+        {
+            size_type new_tail;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_tail = _head;
+                _head    = wrapper_t::increment(_head);
+                --_size;
+                destroy(new_tail);
             }
-            if (success) return 1;
-        }
-    }
-    return 0;
-}
+            else
+                new_tail = wrapper_t::increment(_tail);
 
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::print(const char *p) {
-    if (multi) return;
-    T buffer[strlen(p)] = {0};
-    for (uint32_t i = 0; i < strlen(p); i++) buffer[i] = p[i];
-    write(buffer, strlen(p));
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::println(const char *p) {
-    if (multi) return;
-    T buffer[strlen(p)] = {0};
-    for (uint32_t i = 0; i < strlen(p); i++) buffer[i] = p[i];
-    write(buffer, strlen(p));
-    write('\n');
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::push_front(const T *buffer, uint16_t length) {
-    if (multi) {
-        if (tail == (head ^ _size)) tail = ((tail - 1) & (2 * _size - 1));
-        head = ((head - 1) & (2 * _size - 1));
-        _cabuf[(head & (_size - 1))][0] = length & 0xFF00;
-        _cabuf[(head & (_size - 1))][1] = length & 0xFF;
-        memmove(_cabuf[((head) & (_size - 1))] + 2, buffer, length * sizeof(T));
-        if (_available < _size) _available++;
-        return;
-    }
-    for (uint16_t i = length - 1; i > 0; i--) push_front(buffer[i]);
-    push_front(buffer[0]);
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::pop_back() {
-    if (_available) {
-        if (_available) _available--;
-        tail = ((tail - 1) & (2 * _size - 1));
-        return _cbuf[((tail - 1) & (_size - 1))];
-    }
-    return -1;
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::push_front(T value) {
-    if (multi) return;
-    head = ((head - 1) & (2 * _size - 1));
-    _cbuf[((head) & (_size - 1))] = value;
-    if (_available < _size) _available++;
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::write(const T *buffer, uint16_t length) {
-    if (multi) {
-        _cabuf[((tail) & (_size - 1))][0] = length & 0xFF00;
-        _cabuf[((tail) & (_size - 1))][1] = length & 0xFF;
-        memmove(_cabuf[((tail) & (_size - 1))] + 2, buffer, length * sizeof(T));
-        if (tail == ((head ^ _size))) head = ((head + 1) & (2 * _size - 1));
-        tail = ((tail + 1) & (2 * _size - 1));
-        if (_available < _size) _available++;
-        return;
-    }
-    if ((_available += length) >= _size) _available = _size;
-    if (length < (_size - tail)) {
-        memmove(_cbuf + tail, buffer, length * sizeof(T));
-        tail = ((tail + length) & (2 * _size - 1));
-    } else
-        for (uint16_t i = 0; i < length; i++) write(buffer[i]);
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::write(T value) {
-    if (multi) return;
-    if (_available < _size) _available++;
-    _cbuf[((tail) & (_size - 1))] = value;
-    if (tail == ((head ^ _size))) head = ((head + 1) & (2 * _size - 1));
-    tail = ((tail + 1) & (2 * _size - 1));
-}
-
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::list() {
-    if (multi) {
-        if (!size()) {
-            Serial.println("There are no queues available...");
-            return 0;
+            new(JM_CB_ADDRESSOF(_buffer[new_tail]._value))
+                value_type(std::forward<Args>(args)...);
+            _tail = new_tail;
+            ++_size;
         }
 
-        Serial.print("\nCircular Array Buffer Queue Size: ");
-        Serial.print(size());
-        Serial.print(" / ");
-        Serial.println(_size);
-
-        Serial.print("\nFirst Entry: ");
-        for (uint16_t i = 2; i <= (((int)_cabuf[((head) & (_size - 1))][0] << 8 * sizeof(T)) |
-                                   (int)_cabuf[((head) & (_size - 1))][1]) +
-                                      1;
-             i++) {
-            if ((int)(_cabuf[((head + i) & (_size - 1))][i]) !=
-                (T)(_cabuf[((head + i) & (_size - 1))][i])) {  // possible float?
-                Serial.print(_cabuf[((head) & (_size - 1))][i], 7);
-            } else
-                Serial.print(_cabuf[((head) & (_size - 1))][i]);
-            Serial.print("    ");
-        }
-        Serial.print("(");
-        Serial.print((((int)_cabuf[((head) & (_size - 1))][0] << 8 * sizeof(T)) |
-                      (int)_cabuf[((head) & (_size - 1))][1]));
-        Serial.println(" entries.)");
-
-        Serial.print("Last Entry:  ");
-        for (uint16_t i = 2;
-             i <= (((int)_cabuf[((head + size() - 1) & (_size - 1))][0] << 8 * sizeof(T)) |
-                   (int)_cabuf[((head + size() - 1) & (_size - 1))][1]) +
-                      1;
-             i++) {
-            if ((int)(_cabuf[((head + size() - 1) & (_size - 1))][i]) !=
-                (T)(_cabuf[((head + size() - 1) & (_size - 1))][i])) {  // possible float?
-                Serial.print(_cabuf[((head + size() - 1) & (_size - 1))][i], 7);
-            } else
-                Serial.print(_cabuf[((head + size() - 1) & (_size - 1))][i]);
-            Serial.print("    ");
-        }
-        Serial.print("(");
-        Serial.print((((int)_cabuf[((head + size() - 1) & (_size - 1))][0] << 8 * sizeof(T)) |
-                      (int)_cabuf[((head + size() - 1) & (_size - 1))][1]));
-        Serial.println(" entries.)");
-
-        Serial.print("\n[Indice]      [Entries]\n\n");
-        for (uint16_t i = 0; i < size(); i++) {
-            Serial.print("    ");
-            Serial.print(((head + i) & (_size - 1)));
-            Serial.print("\t\t");
-            for (uint16_t j = 2;
-                 j <= (((int)_cabuf[((head + i) & (_size - 1))][0] << 8 * sizeof(T)) |
-                       (int)_cabuf[((head + i) & (_size - 1))][1]) +
-                          1;
-                 j++) {
-                if ((int)(_cabuf[((head + i) & (_size - 1))][j]) !=
-                    (T)(_cabuf[((head + i) & (_size - 1))][j])) {  // possible float?
-                    Serial.print(_cabuf[((head + i) & (_size - 1))][j], 7);
-                    Serial.print("\t");
-                } else {
-                    Serial.print(_cabuf[((head + i) & (_size - 1))][j]);
-                    Serial.print("\t");
-                }
+        template<typename... Args>
+        void emplace_front(Args&&... args)
+        {
+            size_type new_head;
+            if(JM_CIRCULAR_BUFFER_FULLNESS_LIKEHOOD(_size == N)) {
+                new_head = _tail;
+                _tail    = wrapper_t::decrement(_tail);
+                --_size;
+                destroy(new_head);
             }
-            Serial.print("(");
-            Serial.print((((int)_cabuf[((head + i) & (_size - 1))][0] << 8 * sizeof(T)) |
-                          (int)_cabuf[((head + i) & (_size - 1))][1]));
-            Serial.println(" entries.)");
+            else
+                new_head = wrapper_t::decrement(_head);
+
+            new(JM_CB_ADDRESSOF(_buffer[new_head]._value))
+                value_type(std::forward<Args>(args)...);
+            _head = new_head;
+            ++_size;
         }
-        return _available;
-    }
 
-    if (!size()) {
-        Serial.println("There are no queues available...");
-        return 0;
-    }
-    Serial.print("\nCircular Ring Buffer Queue Size: ");
-    Serial.print(size());
-    Serial.print(" / ");
-    Serial.println(_size);
+#endif // !defined(JM_CIRCULAR_BUFFER_CXX_OLD)
 
-    Serial.print("\nIndice:  \t");
-
-    for (uint16_t i = 0; i < _available; i++) {
-        Serial.print("[");
-        Serial.print((head + i) & (_size - 1));
-        Serial.print("]      \t");
-    }
-
-    Serial.print("\nEntries:\t");
-
-    for (uint16_t i = 0; i < _available; i++) {
-        if ((int)_cbuf[((head + i) & (_size - 1))] !=
-            (T)_cbuf[((head + i) & (_size - 1))]) {  // possible float?
-            Serial.print(_cbuf[((head + i) & (_size - 1))], 7);
-            Serial.print("\t");
-        } else {
-            Serial.print(_cbuf[((head + i) & (_size - 1))]);
-            Serial.print("\t\t");
+        JM_CB_CXX14_CONSTEXPR void pop_back() JM_CB_NOEXCEPT
+        {
+            size_type old_tail = _tail;
+            --_size;
+            _tail = wrapper_t::decrement(_tail);
+            destroy(old_tail);
         }
-    }
-    Serial.println('\n');
 
-    return _available;
-}
+        JM_CB_CXX14_CONSTEXPR void pop_front() JM_CB_NOEXCEPT
+        {
+            size_type old_head = _head;
+            --_size;
+            _head = wrapper_t::increment(_head);
+            destroy(old_head);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::sum() {
-    if (multi || !_available) return 0;
-    T value = 0;
-    for (uint16_t i = 0; i < _available; i++) value += _cbuf[((head + i) & (_size - 1))];
-    return value;
-}
+        JM_CB_CXX14_CONSTEXPR void clear() JM_CB_NOEXCEPT
+        {
+            while(_size != 0)
+                pop_back();
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::average() {
-    if (multi || !_available) return 0;
-    return sum() / _available;
-}
+            _head = 1;
+            _tail = 0;
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::variance() {
-    if (multi || !_available) return 0;
-    T _mean = average();
-    T value = 0;
-    for (uint16_t i = 0; i < _available; i++) {
-        value += ((_cbuf[((head + i) & (_size - 1))] - _mean) *
-                  (_cbuf[((head + i) & (_size - 1))] - _mean));
-    }
-    value /= _available;
-    return value;
-}
+        /// iterators
+        JM_CB_CXX14_CONSTEXPR iterator begin() JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return end();
+            return iterator(_buffer, _head, _size);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::deviation() {
-    if (multi || !_available) return 0;
-    return sqrt(variance());
-}
+        JM_CB_CXX14_CONSTEXPR const_iterator begin() const JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return end();
+            return const_iterator(_buffer, _head, _size);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::peek(uint16_t pos) {
-    if (multi) return 0;
-    if (pos > _size) return 0;
-    return _cbuf[((head + pos) & (_size - 1))];
-}
+        JM_CB_CXX14_CONSTEXPR const_iterator cbegin() const JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return cend();
+            return const_iterator(_buffer, _head, _size);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::sort_ascending() {
-    if (multi || !_available) return;
-    T buffer[_available];
-    for (uint16_t i = 0; i < _available; i++) buffer[i] = _cbuf[((head + i) & (_size - 1))];
-    std::sort(&buffer[0], &buffer[_available]);  // sort ascending
-    for (uint16_t i = 0; i < _available; i++) _cbuf[((head + i) & (_size - 1))] = buffer[i];
-}
+        JM_CB_CXX14_CONSTEXPR reverse_iterator rbegin() JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return rend();
+            return reverse_iterator(iterator(_buffer, _head, _size));
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-void Circular_Buffer<T, _size, multi>::sort_descending() {
-    if (multi || !_available) return;
-    sort_ascending();
-    T buffer[_available];
-    for (uint16_t i = 0; i < _available; i++) buffer[i] = _cbuf[((head + i) & (_size - 1))];
-    std::reverse(&buffer[0], &buffer[_available]);  // sort descending
-    for (uint16_t i = 0; i < _available; i++) _cbuf[((head + i) & (_size - 1))] = buffer[i];
-}
+        JM_CB_CXX14_CONSTEXPR const_reverse_iterator rbegin() const JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return rend();
+            return const_reverse_iterator(const_iterator(_buffer, _head, _size));
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::median(bool override) {
-    if (multi || !_available) return 0;
-    if (override)
-        sort_ascending();
-    else {
-        T buffer[_available];
-        for (uint16_t i = 0; i < _available; i++) buffer[i] = _cbuf[((head + i) & (_size - 1))];
-        std::sort(&buffer[0], &buffer[_available]);  // sort ascending
-    }
-    if (!(_available % 2)) {
-        return (_cbuf[((head + ((_available / 2) - 1)) & (_size - 1))] +
-                _cbuf[((head + (_available / 2)) & (_size - 1))]) /
-               2;
-    } else
-        return _cbuf[((head + ((_available / 2))) & (_size - 1))];
-    return 0;
-}
+        JM_CB_CXX14_CONSTEXPR const_reverse_iterator crbegin() const JM_CB_NOEXCEPT
+        {
+            if(_size == 0)
+                return crend();
+            return const_reverse_iterator(const_iterator(_buffer, _head, _size));
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::max() {
-    if (multi || !_available) return 0;
-    T buffer[_available];
-    for (uint16_t i = 0; i < _available; i++) buffer[i] = _cbuf[((head + i) & (_size - 1))];
-    std::sort(&buffer[0], &buffer[_available]);  // sort ascending
-    return buffer[_available - 1];
-}
+        JM_CB_CXX14_CONSTEXPR iterator end() JM_CB_NOEXCEPT
+        {
+            return iterator(_buffer, wrapper_t::increment(_tail), 0);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::min() {
-    if (multi || !_available) return 0;
-    T buffer[_available];
-    for (uint16_t i = 0; i < _available; i++) buffer[i] = _cbuf[((head + i) & (_size - 1))];
-    std::sort(&buffer[0], &buffer[_available]);  // sort ascending
-    return buffer[0];
-}
+        JM_CB_CXX14_CONSTEXPR const_iterator end() const JM_CB_NOEXCEPT
+        {
+            return const_iterator(_buffer, wrapper_t::increment(_tail), 0);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::peekBytes(T *buffer, uint16_t length) {
-    if (multi) return 0;
-    uint16_t _count = (_available < length) ? _available : length;
-    if (_count < (_size - head))
-        memmove(buffer, _cbuf + head, _count * sizeof(T));
-    else
-        for (uint16_t i = 0; i < _count; i++) buffer[i] = peek(i);
-    return _count;
-}
+        JM_CB_CXX14_CONSTEXPR const_iterator cend() const JM_CB_NOEXCEPT
+        {
+            return const_iterator(_buffer, wrapper_t::increment(_tail), 0);
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::peek_front(T *buffer, uint16_t length, uint32_t entry) {
-    if (multi) {
-        memmove(&buffer[0], &_cabuf[((head + entry) & (_size - 1))][2],
-                length * sizeof(T));  // update CA buffer
-        return 0;
-    }
-}
+        JM_CB_CXX14_CONSTEXPR reverse_iterator rend() JM_CB_NOEXCEPT
+        {
+            return reverse_iterator(iterator(_buffer, wrapper_t::increment(_tail), 0));
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::readBytes(T *buffer, uint16_t length) {
-    if (multi) {
-        memmove(&buffer[0], &_cabuf[((head) & (_size - 1))][2],
-                length * sizeof(T));  // update CA buffer
-        read();
-        return 0;
-    }
-    uint16_t _count = (_available < length) ? _available : length;
-    if (_count < (_size - head))
-        memmove(buffer, _cbuf + head, _count * sizeof(T));
-    else
-        for (uint16_t i = 0; i < _count; i++) buffer[i] = read();  // if buffer rollover
-    return _count;
-}
+        JM_CB_CXX14_CONSTEXPR const_reverse_iterator rend() const JM_CB_NOEXCEPT
+        {
+            return const_reverse_iterator(
+                const_iterator(_buffer, wrapper_t::increment(_tail), 0));
+        }
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::read() {
-    if (multi) {
-        head = ((head + 1) & (2 * _size - 1));
-        if (_available) _available--;
-        return 0;
-    }
-    if (_available) _available--;
-    T value = _cbuf[((head) & (_size - 1))];
-    head = ((head + 1) & (2 * _size - 1));
-    return value;
-}
+        JM_CB_CXX14_CONSTEXPR const_reverse_iterator crend() const JM_CB_NOEXCEPT
+        {
+            return const_reverse_iterator(
+                const_iterator(_buffer, wrapper_t::increment(_tail), 0));
+        }
+    };
 
-template <typename T, uint16_t _size, uint16_t multi>
-T Circular_Buffer<T, _size, multi>::pop_back(T *buffer, uint16_t length) {
-    if (multi) {
-        memmove(&buffer[0], &_cabuf[((tail - 1) & (_size - 1))][2], length * sizeof(T));
-        tail = (tail - 1) & (2 * _size - 1);
-        if (_available) _available--;
-        return 0;
-    }
-}
+} // namespace jm
 
-#endif  // Circular_Buffer_H
+#endif // include guard

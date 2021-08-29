@@ -61,6 +61,7 @@ public:
 
     std::string toString() const;
     std::string toFormattedString(bool showMicroseconds = true) const;
+    std::string toFormattedFileString(bool showMicroseconds = true) const;
 
     bool valid() const { return microSecondsSinceEpoch_ > 0; }
 

@@ -38,11 +38,14 @@
 
 namespace arss {
 
+// arss::Logger::setLogLevel(arss::Logger::TRACE);
+// arss::Logger::setTimeZone(arss::TimeZone(8*3600, "CST"));
+
 class Logger {
 public:
     enum LogLevel {
         TRACE,
-        DEBUG,
+        LOG_LV_DEBUG,
         INFO,
         WARN,
         ERROR,
@@ -131,8 +134,8 @@ private:
     if (arss::Logger::logLevel() <= arss::Logger::TRACE) \
     arss::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, arss::Logger::TRACE, __func__).stream()
 #define LOG_DEBUG                                          \
-    if (arss::Logger::logLevel() <= arss::Logger::DEBUG) \
-    arss::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, arss::Logger::DEBUG, __func__).stream()
+    if (arss::Logger::logLevel() <= arss::Logger::LOG_LV_DEBUG) \
+    arss::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, arss::Logger::LOG_LV_DEBUG, __func__).stream()
 #define LOG_INFO \
     if (arss::Logger::logLevel() <= arss::Logger::INFO) arss::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__).stream()
 #define LOG_WARN arss::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, arss::Logger::WARN).stream()

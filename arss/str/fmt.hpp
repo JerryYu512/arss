@@ -80,6 +80,24 @@ template Fmt::Fmt(const char* fmt, unsigned long long);
 template Fmt::Fmt(const char* fmt, float);
 template Fmt::Fmt(const char* fmt, double);
 
+/**
+ * convert string to built-in types 
+ *   - Returns 0 if the conversion failed, and the errno will be ERANGE or EINVAL.
+ */
+bool to_bool(const char* s);
+int32_t to_int32(const char* s);
+int64_t to_int64(const char* s);
+uint32_t to_uint32(const char* s);
+uint64_t to_uint64(const char* s);
+double to_double(const char* s);
+
+inline bool to_bool(const std::string& s)     { return to_bool(s.c_str()); }
+inline int32_t to_int32(const std::string& s)   { return to_int32(s.c_str()); }
+inline int64_t to_int64(const std::string& s)   { return to_int64(s.c_str()); }
+inline uint32_t to_uint32(const std::string& s) { return to_uint32(s.c_str()); }
+inline uint64_t to_uint64(const std::string& s) { return to_uint64(s.c_str()); }
+inline double to_double(const std::string& s) { return to_double(s.c_str()); }
+
 // NOTE: low-version NDK not provide std::to_string
 template <typename T>
 static inline std::string to_string(const T& t) {

@@ -725,6 +725,20 @@ int find(const std::string& str, const std::string& sub, int start, int end) {
     return (int)result;
 }
 
+int find_not_of(const std::string& str, const std::string& sub, int start, int end) {
+    ADJUST_INDICES(start, end, (int)str.size());
+
+    std::string::size_type result = str.find(sub, start);
+
+    // If we cannot find the string, or if the end-point of our found substring is past
+    // the allowed end limit, return that it can't be found.
+    if (result == std::string::npos || (result + sub.size() >= (std::string::size_type)end)) {
+        return -1;
+    }
+
+    return (int)result;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 ///
 ///
@@ -872,7 +886,7 @@ void splitlines(const std::string& str, std::vector<std::string>& result, bool k
 }
 
 // user=amdin&pswd=123456
-ars::sdk::KeyValue splitKV(const std::string& str, char kv_kv, char k_v) {
+arss::KeyValue splitKV(const std::string& str, char kv_kv, char k_v) {
     enum {
         s_key,
         s_value,
@@ -882,7 +896,7 @@ ars::sdk::KeyValue splitKV(const std::string& str, char kv_kv, char k_v) {
     const char* value = NULL;
     int key_len = 0;
     int value_len = 0;
-    ars::sdk::KeyValue kvs;
+    arss::KeyValue kvs;
     while (*p != '\0') {
         if (*p == kv_kv) {
             if (key_len && value_len) {
