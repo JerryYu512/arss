@@ -596,8 +596,8 @@ bool sock_is_self_connect(int sockfd) {
 }
 
 // 地址重用
-int sock_set_addr_reuse(int fd) {
-    int v = 1;
+int sock_set_addr_reuse(int fd, bool en) {
+    int v = en ? 1 : 0;
     return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v));
 }
 

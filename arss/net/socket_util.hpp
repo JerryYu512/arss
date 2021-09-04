@@ -256,7 +256,7 @@ ssize_t sock_sendto(int fd, const void* data, size_t len, const sock_addr_t& add
 ssize_t sock_recvfrom(int fd, void* data, size_t len, sock_addr_t& addr, time_t w = -1);
 
 // 地址重用
-int sock_set_addr_reuse(int fd);
+int sock_set_addr_reuse(int fd, bool en = true);
 
 // 关闭延迟
 int sock_set_nodelay(int fd, bool en = true);
