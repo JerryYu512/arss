@@ -2,6 +2,7 @@
 RELEASE_VERSION = 1.0.0
 PLAT_NAME = $(shell uname -m)
 OS_NAME = $(shell uname)
+ENABLE_STATIC_LIB = y
 
 ifneq ($(VERSION),)
 	RELEASE_VERSION = $(VERSION)
@@ -48,7 +49,7 @@ LIBS_PATH := -L$(ROOT_DIR)/lib -L/usr/local/lib -L/usr/lib
 # 		  -lmongocxx-static -lbsoncxx-static -lmongoc-static-1.0 -lbson-static-1.0 \
 # 		  -lssl -lcrypto -lz
 
-ST_LIBS_UT = -lgtest
+ST_LIBS_UT = #-lgtest
 
 SO_LIBS = -lz -lssl -lcrypto -lpthread -ldl -lrt # -lresolv
 
