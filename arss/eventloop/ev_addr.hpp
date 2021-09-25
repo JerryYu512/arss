@@ -40,7 +40,7 @@ namespace net {
  * @todo 支持Unix套接字
  * 
  */
-class EvInetAddress : public copyable {
+class EvInetAddress : copyable {
 public:
 	/**
 	 * @brief Construct a new Ev Inet Address object
@@ -59,11 +59,15 @@ public:
 	explicit EvInetAddress(const struct sockaddr_un &addr);
 
 	sa_family_t family(void) const { return addr_.sa.sa_family; }
-	std::string to_ip(void) ;
-	std::string to_ipport(void) ;
-	uint16_t port(void) ;
+	std::string to_ip(void) const ;
+	std::string to_ipport(void) const ;
+	uint16_t port(void) const ;
 	// for unix
-	std::string to_path(void);
+	std::string to_path(void) const ;
+
+	sock_addr_t *get_addr(void) {
+		return &addr_;
+	}
 
 	const struct sockaddr* get_sockaddr(void) const {
 		return &addr_.sa;

@@ -1,7 +1,7 @@
 /**
  * MIT License
  * 
- * Copyright © 2021 <wotsen>.
+ * Copyright © 2021 <Jerry.Yu>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the “Software”), to deal in the Software without
@@ -17,58 +17,43 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * @file ev_tcp_sock.h
+ * @file poll_poller.hpp
  * @brief 
- * @author wotsen (astralrovers@outlook.com)
+ * @author Jerry.Yu (jerry.yu512@outlook.com)
  * @version 1.0.0
- * @date 2021-08-31
+ * @date 2021-09-10
  * 
  * @copyright MIT License
  * 
  */
 #pragma once
-#include "arss/mix/noncopyable.hpp"
-#include <netinet/tcp.h>
-#include <string>
-#include "ev_addr.hpp"
+
+#include "arss/eventloop/ev_poller.hpp"
+#include <vector>
+
+struct pollfd;
 
 namespace arss {
 
 namespace net {
 
-/**
- * @brief tcp socket 封装
- * 
- */
-class EvTcpSocket : noncopyable {
+///
+/// IO Multiplexing with poll(2).
+///
+class EvPollPoller : public EvPoller {
 public:
-	explicit EvTcpSocket(int sockfd) : sockfd_(sockfd) { }
-	~EvTcpSocket();
+    EvPollPoller(EventLoop* loop);
+    ~EvPollPoller() override;
 
-	int fd() const { return sockfd_; }
-	bool get_tcp_info(struct tcp_info*) const;
-	bool get_tcp_info_string(char *buf, int len) const;
-	bool get_tcp_info_string(std::string &) const;
-
-	// 地址已经被使用时抛出异常
-	int bindAddress(const EvInetAddress& localaddr);
-	// 地址已经被使用时抛出异常
-	int listen(void);
-
-	// 成功时返回建立连接的套接字，并获取到对端地址
-	// 失败是返回-1
-	int accept(EvInetAddress* peeraddr);
-
-	// 关闭写端
-	void shutdown_write(void);
-
-	void set_nodelay(bool on);
-	void set_reuseaddr(bool on);
-	void set_reusepot(bool on);
-	void set_keepalive(bool on);
+    Timestamp poll(int timeoutMs, EvChannelList* activeChannels) override;
+    void updateChannel(EvChannel* channel) override;
+    void removeChannel(EvChannel* channel) override;
 
 private:
-	int sockfd_;	///< 套接字
+    void fillActiveChannels(int numEvents, EvChannelList* activeChannels) const;
+
+    typedef std::vector<struct pollfd> PollFdList;
+    PollFdList pollfds_;
 };
 
 } // namespace net

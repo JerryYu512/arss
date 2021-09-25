@@ -120,6 +120,14 @@ static inline int socket_errno_negative() {
 }
 
 /**
+ * @brief 获取错误码
+ * 
+ * @param sockfd 
+ * @return int 
+ */
+int sock_get_error(int sockfd);
+
+/**
  * @brief 创建udp套接字
  *
  * @return int 套接字描述符，小于0异常
@@ -247,6 +255,9 @@ ssize_t sock_writen(int fd, const void* data, size_t len, time_t w = -1);
  */
 ssize_t sock_readn(int fd, void* data, size_t len, time_t w = -1);
 
+ssize_t sock_readv(int fd, const struct iovec *iov, int iovcnt);
+ssize_t sock_writev(int fd, const struct iovec *iov, int iovcnt);
+
 // recv/send
 ssize_t sock_send(int fd, const void* data, size_t len, int flags, time_t w = -1);
 ssize_t sock_recv(int fd, void* data, size_t len, int flags, time_t w = -1);
@@ -290,21 +301,21 @@ int sock_get_peer_name(int fd, sock_addr_t& addr);
 // 是否是连接到自己
 bool sock_is_self_connect(int sockfd);
 
-socklen_t sock_addr_len(sock_addr_t* addr);
+socklen_t sock_addr_len(const sock_addr_t* addr);
 
 // ip地址转为网络字节序
 int sock_resolver(const char* host, sock_addr_t* addr);
 
 // 获取ipport字符串形式
-const char* sock_addr_str(sock_addr_t* addr, char* buf, int len);
+const char* sock_addr_str(const sock_addr_t* addr, char* buf, int len);
 
 // 获取ip地址
-const char* sock_addr_ip(sock_addr_t* addr, char* ip, int len);
+const char* sock_addr_ip(const sock_addr_t* addr, char* ip, int len);
 
 // 获取端口
-uint16_t sock_addr_port(sock_addr_t* addr);
+uint16_t sock_addr_port(const sock_addr_t* addr);
 
-void sock_set_family(sock_addr_t* addr, int family);
+void sock_set_family(const sock_addr_t* addr, int family);
 
 // 设置ip
 int sock_set_ip(sock_addr_t* addr, const char* host);
@@ -319,6 +330,10 @@ int sock_set_ipport(sock_addr_t* addr, const char* host, int port);
 static inline void sock_set_path(sock_addr_t* addr, const char* path) {
     addr->sa.sa_family = AF_UNIX;
     memcpy(addr->sun.sun_path, path, strlen(path) < sizeof(addr->sun.sun_path) ? strlen(path) : sizeof(addr->sun.sun_path));
+}
+
+static inline void sock_get_path(const sock_addr_t* addr, char* path, size_t len) {
+    memcpy(path, addr->sun.sun_path, strlen(path) < sizeof(addr->sun.sun_path) ? len : sizeof(addr->sun.sun_path));
 }
 
 static inline void sock_addr_print(sock_addr_t* addr) {

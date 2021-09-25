@@ -49,7 +49,7 @@ static_assert(offsetof(sockaddr_in6, sin6_family) == 0, "sin6_family offset 0");
 static_assert(offsetof(sockaddr_in, sin_port) == 2, "sin_port offset 2");
 static_assert(offsetof(sockaddr_in6, sin6_port) == 2, "sin6_port offset 2");
 
-EvInetAddress::EvInetAddress(uint16_t port = 0, bool loopbackOnly, bool ipv6) {
+EvInetAddress::EvInetAddress(uint16_t port, bool loopbackOnly, bool ipv6) {
 	memset(&addr_, 0, sizeof(addr_));
 	if (ipv6) {
 		addr_.sin6.sin6_family = AF_INET6;
@@ -91,23 +91,23 @@ EvInetAddress::EvInetAddress(const struct sockaddr_un &addr) {
 	memcpy(&addr_.sun, &addr, sizeof(addr));
 }
 
-std::string EvInetAddress::to_ip(void) {
+std::string EvInetAddress::to_ip(void) const {
 	char buf[64] = "";
 	sock_addr_ip(&addr_, buf, sizeof(buf));
 	return buf;
 }
 
-std::string EvInetAddress::to_ipport(void) {
+std::string EvInetAddress::to_ipport(void) const {
 	char buf[64] = "";
 	sock_addr_str(&addr_, buf, sizeof(buf));
 	return buf;
 }
 
-uint16_t EvInetAddress::port(void) {
+uint16_t EvInetAddress::port(void) const {
 	return sock_addr_port(&addr_);
 }
 
-std::string EvInetAddress::to_path(void) {
+std::string EvInetAddress::to_path(void) const {
 	char buf[128] = "";
 	sock_get_path(&addr_, buf, sizeof(buf));
 	return buf;

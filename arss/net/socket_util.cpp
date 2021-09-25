@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
+#include <sys/uio.h>
 #include <unistd.h>
 
 #include "arss/defs/defs.hpp"
@@ -385,6 +386,14 @@ ssize_t sock_readn(int fd, void *data, size_t len, time_t w) {
     return total;
 }
 
+ssize_t sock_readv(int fd, const struct iovec *iov, int iovcnt) {
+    return ::readv(fd, iov, iovcnt);
+}
+
+ssize_t sock_writev(int fd, const struct iovec *iov, int iovcnt) {
+    return ::writev(fd, iov, iovcnt);
+}
+
 ssize_t sock_send(int fd, const void *data, size_t len, int flags, time_t w) {
     if (w >= 0) {
         int r = net::poll_wait(fd, 'w', w);
@@ -718,7 +727,7 @@ error:
     return -1;
 }
 
-socklen_t sock_addr_len(sock_addr_t *addr) {
+socklen_t sock_addr_len(const sock_addr_t *addr) {
     if (addr->sa.sa_family == AF_INET) {
         return sizeof(struct sockaddr_in);
     } else if (addr->sa.sa_family == AF_INET6) {
@@ -768,7 +777,7 @@ int sock_resolver(const char *host, sock_addr_t *addr) {
     return 0;
 }
 
-const char *sock_addr_ip(sock_addr_t *addr, char *ip, int len) {
+const char *sock_addr_ip(const sock_addr_t *addr, char *ip, int len) {
     if (addr->sa.sa_family == AF_INET) {
         return inet_ntop(AF_INET, &addr->sin.sin_addr, ip, len);
     } else if (addr->sa.sa_family == AF_INET6) {
@@ -777,7 +786,7 @@ const char *sock_addr_ip(sock_addr_t *addr, char *ip, int len) {
     return ip;
 }
 
-uint16_t sock_addr_port(sock_addr_t *addr) {
+uint16_t sock_addr_port(const sock_addr_t *addr) {
     uint16_t port = 0;
     if (addr->sa.sa_family == AF_INET) {
         port = htons(addr->sin.sin_port);
@@ -818,6 +827,17 @@ int sock_set_ipport(sock_addr_t *addr, const char *host, int port) {
     if (ret != 0) return ret;
     sock_set_port(addr, port);
     return 0;
+}
+
+int sock_get_error(int sockfd) {
+    int optval;
+    socklen_t optlen = static_cast<socklen_t>(sizeof optval);
+
+    if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) < 0) {
+        return errno;
+    } else {
+        return optval;
+    }
 }
 
 } // namespace net

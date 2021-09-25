@@ -81,7 +81,7 @@ bool EvTcpSocket::get_tcp_info_string(std::string &tcpi) const {
 }
 
 // 地址已经被使用时抛出异常
-int EvTcpSocket::bindAddress(EvInetAddress& localaddr) {
+int EvTcpSocket::bindAddress(const EvInetAddress& localaddr) {
 	return sock_bind(sockfd_, localaddr.to_ip().c_str(), localaddr.port());
 }
 
@@ -93,7 +93,11 @@ int EvTcpSocket::listen(void) {
 // 成功时返回建立连接的套接字，并获取到对端地址
 // 失败是返回-1
 int EvTcpSocket::accept(EvInetAddress* peeraddr) {
-
+    sock_addr_t temp;
+    memset(&temp, 0, sizeof(temp));
+    int ret = sock_accept(sockfd_, temp);
+    memcpy(peeraddr->get_addr(), &temp, sizeof(temp));
+    return ret;
 }
 
 // 关闭写端

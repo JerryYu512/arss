@@ -2,3 +2,8 @@
 
     * arss: version 1.0.0
     * new arss project.
+
+2021-09-24 woten <astralrovers@outlook.com>
+
+    * arss: version 1.0.0
+    * Add EventLoop, refenrence from muduo.

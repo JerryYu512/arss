@@ -114,7 +114,7 @@ std::string flag_set_value(Flag* flag, const std::string& v) {
 
 template<typename T>
 std::string int_to_string(T t) {
-    if ((0 <= t && t <= 8192) || (t < 0 && t >= -8192)) return arss::str::to_string(t);
+    if ((0 <= t && t <= 8192) || (t < 0 && static_cast<int>(t) >= -8192)) return arss::str::to_string(t);
 
     const char* u = "kmgtp";
     int i = -1;

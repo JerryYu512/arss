@@ -47,6 +47,10 @@ public:
     Timestamp() : microSecondsSinceEpoch_(0) {}
     Timestamp(const Timestamp &t) : microSecondsSinceEpoch_(t.microSecondsSinceEpoch_) {}
     Timestamp(Timestamp &&t) : microSecondsSinceEpoch_(t.microSecondsSinceEpoch_) {}
+    Timestamp &operator=(const Timestamp &t) {
+        microSecondsSinceEpoch_ = t.microSecondsSinceEpoch_;
+        return *this;
+    }
 
     ///
     /// Constucts a Timestamp at specific time

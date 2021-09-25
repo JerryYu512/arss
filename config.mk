@@ -52,6 +52,9 @@ ST_LIBS_UT = -lgtest
 
 SO_LIBS = -lz -lssl -lcrypto -lpthread -ldl -lrt # -lresolv
 
+# 使用poll
+# -DARSS_POOL_EN
+
 DMARCROS := -DLANGUAGE_ZH -DWITH_OPENSSL -DWITH_ZLIB -DSOFT_VERSION=\"$(RELEASE_VERSION)\" \
 			-DARS_COMPILE_TIME=\""$(COMPILE_TIME)"\" -DBUILD_VERSION="\"$(BUILD_VERSION)"\"
 
@@ -69,8 +72,7 @@ endif
 DMARCROS += -D__const__= -pipe -W -Wall -Wno-unused-parameter \
 			-fPIC -fno-omit-frame-pointer -Wno-implicit-fallthrough \
 			-fstack-protector-all -Wno-deprecated-declarations \
-			-Wno-class-memaccess -Wno-unknown-warning-option \
-			-Wno-tautological-constant-out-of-range-compare \
+			-Wno-class-memaccess \
 			-Wno-unused-result -Wno-maybe-uninitialized
 
 # -ggdb

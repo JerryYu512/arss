@@ -1,7 +1,7 @@
 /**
  * MIT License
  * 
- * Copyright © 2021 <wotsen>.
+ * Copyright © 2021 <Jerry.Yu>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the “Software”), to deal in the Software without
@@ -17,59 +17,52 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
- * @file ev_tcp_sock.h
+ * @file ev_buffer.cpp
  * @brief 
- * @author wotsen (astralrovers@outlook.com)
+ * @author Jerry.Yu (jerry.yu512@outlook.com)
  * @version 1.0.0
- * @date 2021-08-31
+ * @date 2021-09-05
  * 
  * @copyright MIT License
  * 
  */
-#pragma once
-#include "arss/mix/noncopyable.hpp"
-#include <netinet/tcp.h>
-#include <string>
-#include "ev_addr.hpp"
+#include "ev_buffer.hpp"
+#include <errno.h>
+#include <sys/uio.h>
+#include "arss/net/socket_util.hpp"
 
 namespace arss {
 
 namespace net {
 
-/**
- * @brief tcp socket 封装
- * 
- */
-class EvTcpSocket : noncopyable {
-public:
-	explicit EvTcpSocket(int sockfd) : sockfd_(sockfd) { }
-	~EvTcpSocket();
+const size_t EvBuffer::kCheapPrepend;
+const size_t EvBuffer::kInitialSize;
 
-	int fd() const { return sockfd_; }
-	bool get_tcp_info(struct tcp_info*) const;
-	bool get_tcp_info_string(char *buf, int len) const;
-	bool get_tcp_info_string(std::string &) const;
+ssize_t EvBuffer::read_fd(int fd, int* savedErrno) {
+	char extrabuf[65536] = {0};
+	struct iovec vec[2];
+	const size_t writable = writable_bytes();
 
-	// 地址已经被使用时抛出异常
-	int bindAddress(const EvInetAddress& localaddr);
-	// 地址已经被使用时抛出异常
-	int listen(void);
+	vec[0].iov_base = (void*)(begin() + writerIdx_);
+	vec[0].iov_len = writable;
+	vec[1].iov_base = extrabuf;
+	vec[1].iov_len = sizeof(extrabuf);
 
-	// 成功时返回建立连接的套接字，并获取到对端地址
-	// 失败是返回-1
-	int accept(EvInetAddress* peeraddr);
+	// 空间足够则使用buffer，否则加上额外内存
+	const int iovcnt = (writable < sizeof(extrabuf)) ? 2 : 1;
+	const ssize_t n = sock_readv(fd, vec, iovcnt);
 
-	// 关闭写端
-	void shutdown_write(void);
+	if (n < 0) {
+		*savedErrno = errno;
+	} else if (static_cast<size_t>(n) <= writable) {
+		writerIdx_ += n;
+	} else {
+		writerIdx_ = buffer_.size();
+		append(extrabuf, n - writable);
+	}
 
-	void set_nodelay(bool on);
-	void set_reuseaddr(bool on);
-	void set_reusepot(bool on);
-	void set_keepalive(bool on);
-
-private:
-	int sockfd_;	///< 套接字
-};
+	return n;
+}
 
 } // namespace net
 

@@ -35,6 +35,8 @@
 #include <assert.h>
 #endif
 
+#include "any.hpp"
+
 namespace arss {
 
 // Taken from google-protobuf stubs/common.h
