@@ -31,7 +31,28 @@
 #include "configure.h"
 
 namespace arss {
-    
+
+// web-logo:https://patorjk.com/software/taag/#p=display&f=Crawford2&t=Type%20Something%20
+// python-logo:https://github.com/JerryYu512/art
+
+// isometric3
+// slant
+// face:
+// cute face6
+
+static const char* asciilogo_slant = R"(
+    __                         __    __  
+   / /_    _____   _____  ____/ /   / /__
+  / __ \  / ___/  / ___/ / __  /   / //_/
+ / /_/ / / /     (__  ) / /_/ /   / ,<   
+/_.___/ /_/     /____/  \__,_/   /_/|_|  
+                                         
+)";
+
+const char* arss_logo(void) {
+    return asciilogo_slant;
+}
+
 int version(void) {
     return (ARSS_VERSION_MAJOR << 16) | (ARSS_VERSION_MINOR << 8) | ARSS_VERSION_ALTER;
 }

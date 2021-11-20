@@ -254,7 +254,7 @@ datetime_t* datetime_future(datetime_t* dt, int days = 1);
 #define ARSS_TIME_FMT_BUFLEN     12
 
 /**
- * @brief 时间格式化
+ * @brief 时间格式化 "%02d:%02d:%02d"
  * 
  * @param sec 秒
  * @param buf 输出buf
@@ -268,7 +268,7 @@ char* duration_fmt(time_t sec, char* buf);
 #define ARSS_DATETIME_FMT_BUFLEN 24
 
 /**
- * @brief 日期格式化
+ * @brief 日期格式化, %04d-%02d-%02d %02d:%02d:%02d
  * 
  * @param dt 日期
  * @param buf 输出buf
@@ -282,7 +282,7 @@ char* datetime_fmt(datetime_t* dt, char* buf);
 #define ARSS_GMTIME_FMT_BUFLEN   30
 
 /**
- * @brief 格林威治时间格式化
+ * @brief 格林威治时间格式化, %.3s, %02d %.3s %04d %02d:%02d:%02d GMT
  * 
  * @param time 时间，秒
  * @param buf 输出buf

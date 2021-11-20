@@ -113,6 +113,13 @@ const char *version_mode(void);
 bool debug_version(void);
 
 /**
+ * @brief 获取logo
+ * 
+ * @return const char* 
+ */
+const char* arss_logo(void);
+
+/**
  * @brief 编译时所在系统架构
  * 
  * @return const char* 
