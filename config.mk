@@ -34,7 +34,7 @@ COMPILE_TIME := $(shell date +"%A %Y-%m-%d %H:%M:%S %z")
 BUILD_VERSION := $(shell date +"%Y%m%d%H%M")
 
 # compile flags
-INC := -I/usr/include -I/usr/local/include -I$(ROOT_DIR)/include -I$(ROOT_DIR)/arss -I$(ROOT_DIR) -Ibuild
+INC := -I/usr/include -I/usr/local/include -I$(ROOT_DIR)/include -I$(ROOT_DIR)/brsdk -I$(ROOT_DIR) -Ibuild
 
 LIBS_PATH := -L$(ROOT_DIR)/lib -L/usr/local/lib -L/usr/lib
 
@@ -54,7 +54,7 @@ ST_LIBS_UT = #-lgtest
 SO_LIBS = -lz -lssl -lcrypto -lpthread -ldl -lrt # -lresolv
 
 # 使用poll
-# -DARSS_POOL_EN
+# -DBRSDK_POOL_EN
 
 DMARCROS := -DLANGUAGE_ZH -DWITH_OPENSSL -DWITH_ZLIB -DUSE_EPOLL -DSOFT_VERSION=\"$(RELEASE_VERSION)\" \
 			-DARS_COMPILE_TIME=\""$(COMPILE_TIME)"\" -DBUILD_VERSION="\"$(BUILD_VERSION)"\"

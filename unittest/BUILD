@@ -1,10 +1,10 @@
 
 cc_test(
-    name = 'ut_arss',
+    name = 'ut_brsdk',
     srcs = [],
     hdrs = [],
     deps = [
-        '//arss:arss'
+        '//brsdk:brsdk'
         '#pthread'
     ]
 )

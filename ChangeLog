@@ -1,9 +1,9 @@
 2021-07-10 woten <astralrovers@outlook.com>
 
-    * arss: version 1.0.0
-    * new arss project.
+    * brsdk: version 1.0.0
+    * new brsdk project.
 
 2021-09-24 woten <astralrovers@outlook.com>
 
-    * arss: version 1.0.0
+    * brsdk: version 1.0.0
     * Add EventLoop, refenrence from muduo.

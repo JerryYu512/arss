@@ -3,18 +3,18 @@ from pathlib import Path
 import sys
 import platform
 import time
-import os
-import re
+# import os
+# import re
 import getpass
 
 parser = OptionParser()
 parser.add_option("--spath", type=str, default="src")
 parser.add_option("--dpath", type=str, default="build")
-parser.add_option("--version", type=str, default="1.0.0", help="ars version")
-parser.add_option("--build-version", type=str, default="1.0.0", help="ars build version")
-parser.add_option("--build-time", type=str, help="ars build time")
-parser.add_option("--compiler", type=str, help="ars compiler")
-parser.add_option("--debug", type=str, default="n", help="ars build time")
+parser.add_option("--version", type=str, default="1.0.0", help="version")
+parser.add_option("--build-version", type=str, default="1.0.0", help="build version")
+parser.add_option("--build-time", type=str, help="build time")
+parser.add_option("--compiler", type=str, help="compiler")
+parser.add_option("--debug", type=str, default="n", help="debug")
 (options, args) = parser.parse_args()
 
 def configure_file(input_file, output_file, vars_dict):
@@ -48,7 +48,7 @@ vars_dict = {
     'build_time':               options.build_time,
     'mode':                     "debug" if options.debug == 'y' else "release",
     'debug':                    "0" if options.debug == 'n' else "1",
-    'ars_athor':                'wotsen(astralrovers@outlook.com)',
+    'author':                   'wotsen(astralrovers@outlook.com)',
     'plat':                     sys.platform,
     'arch':                     platform.machine(),
     'plat_version':             platform.version(),

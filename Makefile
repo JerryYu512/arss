@@ -1,11 +1,11 @@
 # 目标
-TARGET := arss
+TARGET := brsdk
 # 单元测试目标
 UNIT_TEST_TARGET := $(TARGET)_ut
 ROOT_DIR := $(shell pwd)
 
 # 源码路径
-SRC_DIR := arss
+SRC_DIR := brsdk
 UT_DIR := unittest
 
 # 临时目录
@@ -26,6 +26,12 @@ UT_SOURCES := $(shell find $(UT_DIR) -type f -name *.cpp)
 # 替换后缀
 OBJECTS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/$(SRC_DIR)/%,$(SOURCES:.cpp=.o))
 UT_OBJECTS := $(patsubst $(UT_DIR)/%, $(BUILD_DIR)/$(UT_DIR)/%,$(UT_SOURCES:.cpp=.o))
+
+ifndef ECHO
+HIT_TOTAL != ${MAKE} ${MAKECMDGOALS} --dry-run ECHO="HIT_MARK" | grep -c "HIT_MARK"
+HIT_COUNT = $(eval HIT_N != expr ${HIT_N} + 1)${HIT_N}
+ECHO = "[`expr ${HIT_COUNT} '*' 100 / ${HIT_TOTAL}`%]"
+endif
 
 # 临时依赖文件，用于分析每个.o文件依赖的头文件，在依赖的头文件变化时重新编译.o
 DEPS := $(OBJECTS:%.o=%.d)
@@ -78,7 +84,7 @@ api:
 
 .PHONY: install
 install:
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk
 	mkdir -p $(MAKE_INSTALL_DIR)/lib
 
 ifeq ($(ENABLE_SHREAD_LIB), y)
@@ -88,59 +94,59 @@ ifeq ($(ENABLE_STATIC_LIB), y)
 	cp -rf build/lib$(TARGET).a $(MAKE_INSTALL_DIR)/lib/
 endif
 
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/atomic
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/co
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/crypto
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/defs
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/ds
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/encoding
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/err
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/event
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/fs
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/ini
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/flag
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/json
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/lock
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/log
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/mem
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/mix
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/net
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/os
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/plugin
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/process
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/pugixml
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/protocol
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/str
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/thread
-	mkdir -p $(MAKE_INSTALL_DIR)/include/arss/time
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/atomic
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/co
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/crypto
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/defs
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/ds
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/encoding
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/err
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/event
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/fs
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/ini
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/flag
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/json
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/lock
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/log
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/mem
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/mix
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/net
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/os
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/plugin
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/process
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/pugixml
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/protocol
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/str
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/thread
+	mkdir -p $(MAKE_INSTALL_DIR)/include/brsdk/time
 
-	cp -rf arss/atomic/*.h* $(MAKE_INSTALL_DIR)/include/arss/atomic/
-	cp -rf arss/co/*.h* $(MAKE_INSTALL_DIR)/include/arss/co/
-	cp -rf arss/crypto/*.h* $(MAKE_INSTALL_DIR)/include/arss/crypto/
-	cp -rf arss/defs/*.h* $(MAKE_INSTALL_DIR)/include/arss/defs/
-	cp -rf arss/ds/*.h* $(MAKE_INSTALL_DIR)/include/arss/ds/
-	cp -rf arss/encoding/*.h* $(MAKE_INSTALL_DIR)/include/arss/encoding/
-	cp -rf arss/err/*.h* $(MAKE_INSTALL_DIR)/include/arss/err/
-	# cp -rf arss/event/*.h* $(MAKE_INSTALL_DIR)/include/arss/event/
-	cp -rf arss/fs/*.h* $(MAKE_INSTALL_DIR)/include/arss/fs/
-	cp -rf arss/ini/*.h* $(MAKE_INSTALL_DIR)/include/arss/ini/
-	cp -rf arss/flag/*.h* $(MAKE_INSTALL_DIR)/include/arss/flag/
-	cp -rf arss/json/*.h* $(MAKE_INSTALL_DIR)/include/arss/json/
-	cp -rf arss/lock/*.h* $(MAKE_INSTALL_DIR)/include/arss/lock/
-	cp -rf arss/log/*.h* $(MAKE_INSTALL_DIR)/include/arss/log/
-	cp -rf arss/mem/*.h* $(MAKE_INSTALL_DIR)/include/arss/mem/
-	cp -rf arss/mix/*.h* $(MAKE_INSTALL_DIR)/include/arss/mix/
-	cp -rf arss/net/*.h* $(MAKE_INSTALL_DIR)/include/arss/net/
-	cp -rf arss/os/*.h* $(MAKE_INSTALL_DIR)/include/arss/os/
-	cp -rf arss/plugin/*.h* $(MAKE_INSTALL_DIR)/include/arss/plugin/
-	cp -rf arss/process/*.h* $(MAKE_INSTALL_DIR)/include/arss/process/
-	cp -rf arss/pugixml/*.h* $(MAKE_INSTALL_DIR)/include/arss/pugixml/
-	cp -rf arss/protocol/*.h* $(MAKE_INSTALL_DIR)/include/arss/protocol/
-	cp -rf arss/str/*.h* $(MAKE_INSTALL_DIR)/include/arss/str/
-	cp -rf arss/thread/*.h* $(MAKE_INSTALL_DIR)/include/arss/thread/
-	cp -rf arss/time/*.h* $(MAKE_INSTALL_DIR)/include/arss/time/
-	cp -rf arss/arss.hpp $(MAKE_INSTALL_DIR)/include/arss/
-	cp -rf build/configure.h $(MAKE_INSTALL_DIR)/include/arss/
+	cp -rf brsdk/atomic/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/atomic/
+	cp -rf brsdk/co/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/co/
+	cp -rf brsdk/crypto/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/crypto/
+	cp -rf brsdk/defs/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/defs/
+	cp -rf brsdk/ds/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/ds/
+	cp -rf brsdk/encoding/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/encoding/
+	cp -rf brsdk/err/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/err/
+	# cp -rf brsdk/event/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/event/
+	cp -rf brsdk/fs/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/fs/
+	cp -rf brsdk/ini/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/ini/
+	cp -rf brsdk/flag/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/flag/
+	cp -rf brsdk/json/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/json/
+	cp -rf brsdk/lock/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/lock/
+	cp -rf brsdk/log/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/log/
+	cp -rf brsdk/mem/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/mem/
+	cp -rf brsdk/mix/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/mix/
+	cp -rf brsdk/net/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/net/
+	cp -rf brsdk/os/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/os/
+	cp -rf brsdk/plugin/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/plugin/
+	cp -rf brsdk/process/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/process/
+	cp -rf brsdk/pugixml/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/pugixml/
+	cp -rf brsdk/protocol/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/protocol/
+	cp -rf brsdk/str/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/str/
+	cp -rf brsdk/thread/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/thread/
+	cp -rf brsdk/time/*.h* $(MAKE_INSTALL_DIR)/include/brsdk/time/
+	cp -rf brsdk/brsdk.hpp $(MAKE_INSTALL_DIR)/include/brsdk/
+	cp -rf build/configure.h $(MAKE_INSTALL_DIR)/include/brsdk/
 
 # 打包
 .PHONY: pack
@@ -185,7 +191,7 @@ clean:
 # dependencies
 -include $(DEPS)
 $(BUILD_DIR)/%.o: %.c* $(CONFIG_HEADER)
-	@echo "\033[32m$(CXX) $<\033[0m"
+	@echo "$(ECHO) \033[32m$(CXX) $<\033[0m"
 	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi;\
 	$(CXX) $(OBJCCFLAG) -MM -MT $@ -MF $(patsubst %.o, %.d, $@) $<; \
 	$(CXX) $(OBJCCFLAG) $< -o $@
