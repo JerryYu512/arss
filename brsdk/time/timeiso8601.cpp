@@ -26,7 +26,8 @@
  * @copyright MIT License
  * 
  */
-#include "time.hpp"
+#include "timestamp.hpp"
+#include "date.hpp"
 #include "timeiso8601.hpp"
 
 namespace brsdk {
@@ -216,7 +217,7 @@ bool TimeISO8601::parse(const char* str, size_t len, timeiso8601_t* tsp) {
         hour > 23 || parse_2d(cur, 14, &min) || min > 59 || parse_2d(cur, 17, &sec) || sec > 59)
         return false;
 
-    if (day > 28 && day > days_of_month(year, month)) return false;
+    if (day > 28 && day > Date::days_of_month(year, month)) return false;
 
     if (month < 3) year--;
 

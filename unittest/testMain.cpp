@@ -2,6 +2,10 @@
 #include "brsdk/doctest.h"
 #include "brsdk/defs/defs.hpp"
 #include "brsdk/co/co.hpp"
+#include "brsdk/time/date.hpp"
+#include "brsdk/time/timestamp.hpp"
+#include "brsdk/time/timezone.hpp"
+#include "brsdk/time/timeiso8601.hpp"
 
 using namespace brsdk;
 
@@ -52,4 +56,23 @@ TEST_CASE("co schedule") {
 	new_co(1*1024*1024, co_1, 2);
 	sch_run();
 	sch_stop(sch);
+}
+
+TEST_CASE("time-date") {
+	Date date(2021, 12, 12);
+	CHECK_EQ("2021-12-12", date.toIsoString());
+	Timestamp ts(Timestamp::now());
+
+	MESSAGE(ts.toString());
+	MESSAGE(ts.toFormattedFileString());
+	MESSAGE(ts.toFormattedString());
+
+	timeiso8601_t stdt = {
+		Timestamp::time(),
+		0,
+		8 * 60
+	};
+	char stdbuf[64] = "";
+	TimeISO8601::format(stdbuf, sizeof(stdbuf), &stdt);
+	MESSAGE(stdbuf);
 }

@@ -109,7 +109,8 @@ void defaultFlush() { fflush(stdout); }
 
 Logger::OutputFunc g_output = defaultOutput;
 Logger::FlushFunc g_flush = defaultFlush;
-TimeZone g_logTimeZone;
+// 北京时间
+TimeZone g_logTimeZone(8*3600, "CST");
 Logger::LogLevel g_logLevel = initLogLevel();
 
 Logger::Impl::Impl(LogLevel level, int savedErrno, const char* mname, const SourceFile& file, int line, const char *func)

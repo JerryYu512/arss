@@ -27,9 +27,18 @@
  * 
  */
 #include "date.hpp"
+#include <string.h>
+#include <assert.h>
 #include <stdio.h>  // snprintf
 
 namespace brsdk {
+
+static const char* s_weekdays[] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
+                                   "Thursday", "Friday", "Saturday"};
+
+static const char* s_months[] = {"January",   "February", "March",    "April",
+                                 "May",       "June",     "July",     "August",
+                                 "September", "October",  "November", "December"};
 
 namespace detail {
 
@@ -79,5 +88,30 @@ std::string Date::toIsoString() const {
 }
 
 Date::YearMonthDay Date::yearMonthDay() const { return getYearMonthDay(julianDayNumber_); }
+
+int Date::month_atoi(const char* month) {
+    for (size_t i = 0; i < 12; ++i) {
+        if (strncasecmp(month, s_months[i], strlen(month)) == 0) return i + 1;
+    }
+    return 0;
+}
+
+const char* Date::month_itoa(int month) {
+    assert(month >= 1 && month <= 12);
+    return s_months[month - 1];
+}
+
+int Date::weekday_atoi(const char* weekday) {
+    for (size_t i = 0; i < 7; ++i) {
+        if (strncasecmp(weekday, s_weekdays[i], strlen(weekday)) == 0) return i;
+    }
+    return 0;
+}
+
+const char* Date::weekday_itoa(int weekday) {
+    assert(weekday >= 0 && weekday <= 7);
+    if (weekday == 7) weekday = 0;
+    return s_weekdays[weekday];
+}
 
 } // namespace brsdk
