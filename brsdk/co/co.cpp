@@ -30,23 +30,28 @@
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>
 #include <condition_variable>
 #include <mutex>
 #include <stdio.h>
 #include "_co.h"
 #include "brsdk/ds/list.hpp"
+#include "brsdk/log/logging.hpp"
+#include "brsdk/thread/current_thread.hpp"
 
 namespace brsdk {
 
+///< 协程节点
 typedef struct {
     list_node node;
     co_t *co;
 } co_id_t;
 
+///< 协程上下文
 struct CoContext {
-    proxy_co_fn cb;
-    void *udata;
+    proxy_co_fn cb; ///< 协程函数
+    void *udata;    ///< 用户数据
     co_id_t *id;
 };
 
@@ -94,6 +99,7 @@ public:
         {
             std::unique_lock<std::mutex> lck(mtx_);
             if (!stoped_) {
+				LOG_INFO << thread::name() << " running\n";
                 return;
             }
 
@@ -108,27 +114,35 @@ public:
         {
             std::unique_lock<std::mutex> lck(mtx_);
             if (stoped_) {
+				LOG_INFO << thread::name() << " stoped\n";
                 return;
             }
 
             stop_ = true;
 
             cond_.wait(lck, [this] { return stoped_; });
+
+            stop_ = false;
         }
     }
 
-    void add(size_t stack, proxy_co_fn fn) {
+    void add(size_t stack, const proxy_co_fn &fn) {
         CoContext *ctx = (CoContext*)malloc_(sizeof(CoContext));
         if (!ctx) {
+			LOG_PARAM_NULL(ctx);
             return;
         }
+        memset(ctx, 0, sizeof(*ctx));
 
         co_id_t *id = (co_id_t*)malloc_(sizeof(co_id_t));
         if (!id) {
             free_(ctx);
+			LOG_PARAM_NULL(id);
             return;
         }
         list_init(&id->node);
+
+		LOG_DEBUG << "add co\n";
 
         ctx->cb = fn;
         ctx->udata = this;
@@ -140,6 +154,7 @@ public:
         if (!co) {
             free_(ctx);
             free_(id);
+			LOG_PARAM_NULL(co);
             return;
         }
 
@@ -180,36 +195,34 @@ public:
 
         CoSchedule *ptr = (CoSchedule*)ud;
 
-        while (!ptr->stop_) {
-            while (!ptr->stop_ && co_num(ptr->sch_)) {
-                // 获取当前协程
-                list_node *node = nullptr;
-                {
-                    std::unique_lock<std::mutex> lck(ptr->cos_mtx_);
-                    node = ptr->cur_;
-                }
+		while (!ptr->stop_ && co_num(ptr->sch_)) {
+			// 获取当前协程
+			list_node *node = nullptr;
+			{
+				std::unique_lock<std::mutex> lck(ptr->cos_mtx_);
+				node = ptr->cur_;
+			}
 
-                if (node) {
-                    co_resume(sch, list_entry(node, co_id_t, node)->co);
-                    // 切换到下个协程
-                    std::unique_lock<std::mutex> lck(ptr->cos_mtx_);
-                    if (list_empty(&ptr->cos_)) {
-                        ptr->cur_ = nullptr;
-                        break;
-                    }
-                    // 节点没有被切换，只有该协程不是正常退出时才没有切换
-                    if (node == ptr->cur_) {
-                        list_node *n = node->next;
-                        // 最后一个节点
-                        if (n == &ptr->cos_) {
-                            ptr->cur_ = n->next;
-                        } else {
-                            ptr->cur_ = n;
-                        }
-                    }
-                }
-            }
-        }
+			if (node) {
+				co_resume(sch, list_entry(node, co_id_t, node)->co);
+				// 切换到下个协程
+				std::unique_lock<std::mutex> lck(ptr->cos_mtx_);
+				if (list_empty(&ptr->cos_)) {
+					ptr->cur_ = nullptr;
+					break;
+				}
+				// 节点没有被切换，只有该协程不是正常退出时才没有切换
+				if (node == ptr->cur_) {
+					list_node *n = node->next;
+					// 最后一个节点
+					if (n == &ptr->cos_) {
+						ptr->cur_ = n->next;
+					} else {
+						ptr->cur_ = n;
+					}
+				}
+			}
+		}
 
         {
             std::unique_lock<std::mutex> lck(ptr->mtx_);
@@ -273,7 +286,7 @@ void sch_stop(CoSchedule *sch) {
     }
 }
 
-void __add_co(size_t stack, proxy_co_fn fn) {
+void __add_co(size_t stack, const proxy_co_fn &fn) {
     sch_ref()->add(stack, fn);
 }
 

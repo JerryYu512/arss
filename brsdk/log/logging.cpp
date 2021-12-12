@@ -60,8 +60,12 @@ __thread char t_time[64];
 __thread time_t t_lastSecond;
 
 const char* LogLevelName[Logger::NUM_LOG_LEVELS] = {
-    "TRACE", "DEBUG", "INFO ", "WARN ", "ERROR", "FATAL",
+    "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL",
 };
+
+int get_errno(void) {
+    return errno;
+}
 
 const char* strerror_tl(int savedErrno) {
     return strerror_r(savedErrno, t_errnobuf, sizeof t_errnobuf);

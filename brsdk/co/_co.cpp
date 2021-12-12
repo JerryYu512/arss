@@ -35,6 +35,8 @@
 
 #include "brsdk/mem/mem.hpp"
 #include "brsdk/ds/list.hpp"
+#include "brsdk/log/logging.hpp"
+#include "brsdk/thread/current_thread.hpp"
 
 namespace brsdk {
 
@@ -42,11 +44,19 @@ namespace brsdk {
 
 typedef struct co_stack_s co_stack_t;
 
+/**
+ * @brief 协程栈
+ * 
+ */
 struct co_stack_s {
-    void *stack;
-    size_t stacksize;
+    void *stack;        ///< 栈指针
+    size_t stacksize;   ///< 栈大小
 };
 
+/**
+ * @brief 协程
+ * 
+ */
 struct co_s {
     list_node node;         ///< 链表节点
     co_schedule_t *sch;     ///< 调度器
@@ -58,6 +68,10 @@ struct co_s {
     co_stack_t stack;       ///< 协程栈
 };
 
+/**
+ * @brief 调度器
+ * 
+ */
 struct schedule_s {
     co_schedule_conf_t conf;    ///< 配置
     co_entry_t entry;           ///< 调度入口
@@ -73,11 +87,14 @@ static void _del_co(co_schedule_t *sch);
 
 co_schedule_t *co_creat(const co_schedule_conf_t *conf, co_entry_t entry, void *data) {
     if (!entry || !conf) {
+        LOG_PARAM_NULL(entry);
+        LOG_PARAM_NULL(conf);
         return NULL;
     }
     co_schedule_t *sch = (co_schedule_t *)brsdk_malloc(sizeof(co_schedule_t));
 
     if (!sch) {
+        LOG_PARAM_NULL(sch);
         return NULL;
     }
 
@@ -111,16 +128,20 @@ co_schedule_t *co_creat(const co_schedule_conf_t *conf, co_entry_t entry, void *
     sch->cur = NULL;
     list_init(&sch->cos);
 
+    LOG_INFO << "thread[" << thread::name() << "] create schedule.\n";
+
     return sch;
 }
 
 int co_destroy(co_schedule_t *sch) {
     if (!sch) {
+        LOG_PARAM_NULL(sch);
         return -1;
     }
 
     // 当前还有协程在执行
     if (sch->cur) {
+        LOG_PARAM_NULL(sch->cur);
         return -1;
     }
 
@@ -137,13 +158,16 @@ int co_destroy(co_schedule_t *sch) {
     }
 
     co_free_t _free = sch->conf.free;
-    _free(sch);
+    if (_free) {
+        _free(sch);
+    }
 
     return 0;
 }
 
 int co_run(co_schedule_t *sch) {
     if (!sch) {
+        LOG_PARAM_NULL(sch);
         return -1;
     }
 
@@ -162,15 +186,19 @@ size_t co_num(co_schedule_t *sch) {
 
 co_t *co_new(co_schedule_t *sch, co_cb_t cb, size_t stack, co_close_cb_t close_cb, void *udata) {
     if (!sch || !cb) {
+        LOG_PARAM_NULL(sch);
+        LOG_PARAM_NULL(cb);
         return NULL;
     }
 
     if (sch->ns >= sch->conf.limit) {
+        LOG_PARAM_OVER_RANGE(sch->ns, 0, sch->conf.limit);
         return NULL;
     }
 
     co_t *new_co = (co_t*)sch->conf.malloc(sizeof(co_t));
     if (!new_co) {
+        LOG_PARAM_NULL(new_co);
         return NULL;
     }
 
@@ -183,13 +211,15 @@ co_t *co_new(co_schedule_t *sch, co_cb_t cb, size_t stack, co_close_cb_t close_c
     } else if (stack > sch->conf.max_stack) {
         ss = sch->conf.max_stack;
     } else {
-        return NULL;
+        ss = stack;
     }
+    LOG_DEBUG << "stack = " << ss << "\n";
 
     new_co->stack.stacksize = ss;
 
     if (sch->conf.memalign(&new_co->stack.stack, getpagesize(), ss) < 0) {
         sch->conf.free(new_co);
+        LOG_MEMALLOC_FAILED(getpagesize());
         return NULL;
     }
 
@@ -204,6 +234,8 @@ co_t *co_new(co_schedule_t *sch, co_cb_t cb, size_t stack, co_close_cb_t close_c
 
     list_add_tail(&new_co->node, &sch->cos);
     sch->ns++;
+
+    LOG_DEBUG << thread::name() << " | current sch->ns = " << sch->ns << "\n";
 
     return new_co;
 }
@@ -279,6 +311,7 @@ void co_yield(co_schedule_t *sch) {
 
 co_status_e co_status(co_t *co) {
     if (!co) {
+        LOG_PARAM_NULL(co);
         return CO_ST_DEAD;
     }
 

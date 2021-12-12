@@ -32,6 +32,7 @@
 #include "brsdk/time/timezone.hpp"
 #include "logstream.hpp"
 
+///< 模块名称
 #ifndef CUSTOM_MODULE_NAME
 #define CUSTOM_MODULE_NAME "NON"
 #endif
@@ -144,6 +145,17 @@ private:
 #define LOG_SYSERR brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, false).stream()
 #define LOG_SYSFATAL brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, true).stream()
 
+///< 内存分配错误
+#define LOG_MEMALLOC_FAILED(size) LOG_ERROR << "alloc memory failed, size = " << size << ", reason : " << brsdk::strerror_tl(brsdk::get_errno()) << "\n";
+///< 参数为空
+#define LOG_PARAM_NULL(ptr) LOG_ERROR << #ptr << " = " << ptr << ", maybe null\n"
+///< 超出范围
+#define LOG_PARAM_OVER_RANGE(v, min, max) LOG_ERROR << #v << " not in range[" << min << "," << max << "]\n"
+
+///< 系统错误码
+int get_errno(void);
+
+///< 转换为字符串
 const char* strerror_tl(int savedErrno);
 
 // Taken from glog/logging.h

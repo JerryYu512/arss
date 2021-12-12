@@ -28,12 +28,12 @@
  */
 #pragma once
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include "attr.hpp"
 #include "platform.hpp"
 
@@ -51,14 +51,14 @@
 #endif
 
 // TODO:增加功能注释说明
-#define BRSDK_DUMP_BUFFER(buf, len)                                        \
+#define BRSDK_DUMP_BUFFER(buf, len)                                       \
     do {                                                                  \
-        int _i, _j = 0;                                                   \
+        unsigned long int _i, _j = 0;                                     \
         char _tmp[128] = {0};                                             \
         if (buf == NULL || len <= 0) {                                    \
             break;                                                        \
         }                                                                 \
-        for (_i = 0; _i < len; _i++) {                                    \
+        for (_i = 0; _i < (unsigned long int)len; _i++) {                 \
             if (!(_i % 16)) {                                             \
                 if (_i != 0) {                                            \
                     printf("%s", _tmp);                                   \
@@ -99,8 +99,8 @@
 #endif
 
 /// 大小端
-#define BRSDK_BIG_ENDIAN 4321             ///< 大端
-#define BRSDK_LITTLE_ENDIAN 1234          ///< 小端
+#define BRSDK_BIG_ENDIAN 4321              ///< 大端
+#define BRSDK_LITTLE_ENDIAN 1234           ///< 小端
 #define BRSDK_NET_ENDIAN BRSDK_BIG_ENDIAN  ///< 网络字节序
 
 /// 字节序
@@ -188,7 +188,8 @@ ASCII:
 // TODO:注释
 #define BRSDK_IS_GRAPH(c) ((c) >= 0x20 && (c) < 0x7F)
 /// 是否是16进制字符
-#define BRSDK_IS_HEX(c) (BRSDK_IS_NUM(c) || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
+#define BRSDK_IS_HEX(c) \
+    (BRSDK_IS_NUM(c) || ((c) >= 'a' && (c) <= 'f') || ((c) >= 'A' && (c) <= 'F'))
 /// 是否是小写字母
 #define BRSDK_IS_LOWER(c) (((c) >= 'a' && (c) <= 'z'))
 /// 是否是大写字母
@@ -199,9 +200,9 @@ ASCII:
 #define BRSDK_UPPER(c) ((c) & ~0x20)
 
 /// 数值对齐
-#define ars_align(d, a) (((d) + (a - 1)) & ~(a - 1))
+#define brsdk_align(d, a) (((d) + (a - 1)) & ~(a - 1))
 /// 指针对齐
-#define ars_align_ptr(p, a) (uint8_t *)(((uintptr_t)(p) + ((uintptr_t)a - 1)) & ~((uintptr_t)a - 1))
+#define brsdk_align_ptr(p, a) (uint8_t *)(((uintptr_t)(p) + ((uintptr_t)a - 1)) & ~((uintptr_t)a - 1))
 
 /// 类型强转
 // LD, LU, LLD, LLU for explicit conversion of integer
@@ -233,117 +234,38 @@ ASCII:
 
 /// 安全函数操作
 #define BRSDK_SAFE_FREE(p) \
-    do {                  \
-        if (p) {          \
-            free(p);      \
-            (p) = NULL;   \
-        }                 \
+    do {                   \
+        if (p) {           \
+            free(p);       \
+            (p) = NULL;    \
+        }                  \
     } while (0)
 #define BRSDK_SAFE_DELETE(p) \
-    do {                    \
-        if (p) {            \
-            delete (p);     \
-            (p) = NULL;     \
-        }                   \
-    } while (0)
-#define BRSDK_SAFE_DELETE_ARRAY(p) \
-    do {                          \
-        if (p) {                  \
-            delete[](p);          \
-            (p) = NULL;           \
-        }                         \
-    } while (0)
-#define BRSDK_SAFE_RELEASE(p) \
     do {                     \
         if (p) {             \
-            (p)->release();  \
+            delete (p);      \
             (p) = NULL;      \
         }                    \
+    } while (0)
+#define BRSDK_SAFE_DELETE_ARRAY(p) \
+    do {                           \
+        if (p) {                   \
+            delete[](p);           \
+            (p) = NULL;            \
+        }                          \
+    } while (0)
+#define BRSDK_SAFE_RELEASE(p) \
+    do {                      \
+        if (p) {              \
+            (p)->release();   \
+            (p) = NULL;       \
+        }                     \
     } while (0)
 
 /// 交换值
 #define BRSDK_SWAP(a, b)             \
-    do {                            \
+    do {                             \
         BRSDK_TYPEOF(a) __tmp = (a); \
-        (a) = (b);                  \
-        (b) = __tmp;                \
+        (a) = (b);                   \
+        (b) = __tmp;                 \
     } while (0)
-
-// Thread safety annotations {
-// https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
-
-// Enable thread safety attributes only with clang.
-// The attributes can be safely erased when compiling with other compilers.
-#if defined(__clang__) && (!defined(SWIG))
-#define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
-#else
-#define THREAD_ANNOTATION_ATTRIBUTE__(x)  // no-op
-#endif
-
-#define CAPABILITY(x) THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
-
-#define SCOPED_CAPABILITY THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
-
-#define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
-
-#define PT_GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
-
-#define ACQUIRED_BEFORE(...) THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
-
-#define ACQUIRED_AFTER(...) THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
-
-#define REQUIRES(...) THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
-
-#define REQUIRES_SHARED(...) THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
-
-#define ACQUIRE(...) THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(__VA_ARGS__))
-
-#define ACQUIRE_SHARED(...) THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(__VA_ARGS__))
-
-#define RELEASE(...) THREAD_ANNOTATION_ATTRIBUTE__(release_capability(__VA_ARGS__))
-
-#define RELEASE_SHARED(...) THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
-
-#define TRY_ACQUIRE(...) THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
-
-#define TRY_ACQUIRE_SHARED(...) \
-    THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(__VA_ARGS__))
-
-#define EXCLUDES(...) THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
-
-#define ASSERT_CAPABILITY(x) THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
-
-#define ASSERT_SHARED_CAPABILITY(x) THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_capability(x))
-
-#define RETURN_CAPABILITY(x) THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
-
-#define NO_THREAD_SAFETY_ANALYSIS THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
-
-// End of thread safety annotations }
-
-#ifdef CHECK_PTHREAD_RETURN_VALUE
-
-#ifdef NDEBUG
-__BEGIN_DECLS
-extern void __assert_perror_fail(int errnum, const char *file, unsigned int line,
-                                 const char *function) noexcept __attribute__((__noreturn__));
-__END_DECLS
-#endif
-
-#define MCHECK(ret)                                                     \
-    ({                                                                  \
-        __typeof__(ret) errnum = (ret);                                 \
-        if (__builtin_expect(errnum != 0, 0))                           \
-            __assert_perror_fail(errnum, __FILE__, __LINE__, __func__); \
-    })
-
-#else  // CHECK_PTHREAD_RETURN_VALUE
-
-#define MCHECK(ret)                     \
-    ({                                  \
-        __typeof__(ret) errnum = (ret); \
-        assert(errnum == 0);            \
-        (void)errnum;                   \
-    })
-
-#endif  // CHECK_PTHREAD_RETURN_VALUE

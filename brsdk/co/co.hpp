@@ -84,11 +84,11 @@ void yield(void);
  * @param stack 栈大小
  * @param fn 协程函数
  */
-void __add_co(size_t stack, proxy_co_fn fn);
+void __add_co(size_t stack, const proxy_co_fn &fn);
 
-/// 添加协程任务，支持不定参数
+/// 添加协程任务，支持不定参数，协程栈大小
 template <typename F, typename... Args>
-void new_co(F &&f, Args &&... args) {
+void new_co_default(F &&f, Args &&... args) {
 	auto call = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 
     __add_co(0, [call]() { call(); });
@@ -99,7 +99,7 @@ template <typename F, typename... Args>
 void new_co(size_t stack, F &&f, Args &&... args) {
 	auto call = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 
-    __add_co(stack, [call]() { (*call)(); });
+    __add_co(stack, [call]() { call(); });
 }
 
 } // namespace brsdk

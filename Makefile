@@ -44,7 +44,7 @@ all: pack demo ut
 
 # 生成配置头文件
 .PHONY: config
-config: $(ROOT_DIR)/$(SRC_DIR)/configure.h.in
+config: $(ROOT_DIR)/$(SRC_DIR)/configure.h.in config.py
 	@mkdir -p build
 	@mkdir -p include
 	@mkdir -p lib
