@@ -34,23 +34,6 @@
 namespace brsdk {
 
 /**
- * @brief 内存分配接口
- */
-typedef struct {
-    void *(*malloc)(size_t);
-    int (*memalign)(void **, size_t, size_t);
-    void *(*realloc)(void *, size_t);
-    void *(*calloc)(size_t, size_t);
-    void (*free)(void *);
-} memory_conf_t;
-
-/**
- * @brief 内存函数初始化
- * @param conf 配置
- */
-void brsdk_memory_init(const memory_conf_t &conf);
-
-/**
  * @brief 内存分配
  * @param size 内存大小
  * @return 内存地址

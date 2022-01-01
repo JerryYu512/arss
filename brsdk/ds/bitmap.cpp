@@ -29,6 +29,7 @@
 #include "bitmap.hpp"
 #include <string.h>
 #include "hweight.hpp"
+#include "brsdk/defs/defs.hpp"
 
 namespace brsdk {
 
@@ -54,33 +55,65 @@ void bitmap_copy(uint8_t* bitmap, const uint8_t* src, size_t nbits) {
 }
 
 void bitmap_set(uint8_t* bitmap, size_t start, size_t len) {
-    size_t end = start + len;
-    size_t from = start / BITS_PER_BYTE;
-    uint8_t mask = ((uint8_t)~0) >> (start % BITS_PER_BYTE);
-    while (from < end / BITS_PER_BYTE) {
-        bitmap[from++] |= mask;
-        mask = (uint8_t)~0;
-    }
+    size_t from = start / CHAR_BIT;
+    size_t to = (start + len) / CHAR_BIT;
 
-    if (end % BITS_PER_BYTE) {
-        mask &= BITS_MASK_BYTE(end % BITS_PER_BYTE);
-        bitmap[from] |= mask;
+    from++;
+
+    if (from < to) {
+        memset(bitmap + from, 0xFF, to - from);
     }
+    for (size_t pos = start; pos < (from * CHAR_BIT) && pos < (start + len); pos++) {
+        BRSDK_BITMAP_SET(bitmap, pos);
+    }
+    if (from <= to) {
+        for (size_t pos = to * CHAR_BIT; pos < (start + len); pos++) {
+            BRSDK_BITMAP_SET(bitmap, pos);
+        }
+    }
+    // size_t end = start + len;
+    // size_t from = start / BITS_PER_BYTE;
+    // uint8_t mask = ((uint8_t)~0) >> (start % BITS_PER_BYTE);
+    // while (from < end / BITS_PER_BYTE) {
+    //     bitmap[from++] |= mask;
+    //     mask = (uint8_t)~0;
+    // }
+
+    // if (end % BITS_PER_BYTE) {
+    //     mask &= BITS_MASK_BYTE(end % BITS_PER_BYTE);
+    //     bitmap[from] |= mask;
+    // }
 }
 
 void bitmap_clear(uint8_t* bitmap, size_t start, size_t len) {
-    size_t end = start + len;
-    size_t from = start / BITS_PER_BYTE;
-    uint8_t mask = BITS_MASK_BYTE(start % BITS_PER_BYTE);
-    while (from < end / BITS_PER_BYTE) {
-        bitmap[from++] &= mask;
-        mask = 0UL;
-    }
+    size_t from = start / CHAR_BIT;
+    size_t to = (start + len) / CHAR_BIT;
 
-    if (end % BITS_PER_BYTE) {
-        mask |= ((uint8_t)~0) >> (end % BITS_PER_BYTE);
-        bitmap[from] &= mask;
+    from++;
+
+    if (from < to) {
+        memset(bitmap + from, 0, to - from);
     }
+    for (size_t pos = start; pos < (from * CHAR_BIT) && pos < (start + len); pos++) {
+        BRSDK_BITMAP_CLR(bitmap, pos);
+    }
+    if (from <= to) {
+        for (size_t pos = to * CHAR_BIT; pos < (start + len); pos++) {
+            BRSDK_BITMAP_CLR(bitmap, pos);
+        }
+    }
+    // size_t end = start + len;
+    // size_t from = start / BITS_PER_BYTE;
+    // uint8_t mask = BITS_MASK_BYTE(start % BITS_PER_BYTE);
+    // while (from < end / BITS_PER_BYTE) {
+    //     bitmap[from++] &= mask;
+    //     mask = 0UL;
+    // }
+
+    // if (end % BITS_PER_BYTE) {
+    //     mask |= ((uint8_t)~0) >> (end % BITS_PER_BYTE);
+    //     bitmap[from] &= mask;
+    // }
 }
 
 void bitmap_or(uint8_t* result, const uint8_t* src1, const uint8_t* src2, size_t nbits) {
@@ -173,7 +206,7 @@ static inline unsigned int clz(unsigned long v)
 #endif
 
 // Count Leading Zeros
-static inline unsigned int clz8(uint8_t v) {
+unsigned int clz8(uint8_t v) {
     unsigned int num = BITS_PER_BYTE;
     if (0xF0 & v) {
         num -= 4;
@@ -248,8 +281,9 @@ size_t bitmap_find_next_zero(const uint8_t* bitmap, size_t nbits, size_t start) 
 }
 
 int bitmap_test_bit(const uint8_t* bitmap, size_t bits) {
-    size_t n = bits / BITS_PER_BYTE;
-    return bitmap[n] & (1 << (BITS_PER_BYTE - 1 - (bits % BITS_PER_BYTE)));
+    return 0 != BRSDK_BITMAP_GET(bitmap, bits);
+    // size_t n = bits / BITS_PER_BYTE;
+    // return bitmap[n] & (1 << (BITS_PER_BYTE - 1 - (bits % BITS_PER_BYTE)));
 }
 
 }  // namespace ds

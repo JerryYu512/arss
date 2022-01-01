@@ -65,6 +65,7 @@ size_t bitmap_weight(const uint8_t* bitmap, size_t nbits);
 /// @return 0-not set, other-set to 1
 int bitmap_test_bit(const uint8_t* bitmap, size_t bits);
 
+unsigned int clz8(uint8_t v);
 } // namespace ds
 
 } // namespace brsdk

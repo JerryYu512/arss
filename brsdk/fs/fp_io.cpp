@@ -81,16 +81,7 @@ int64_t fpio_write(file_dec_t& fp, const void* ptr, size_t len) {
     return write(fp.fd.fd, ptr, len);
 }
 
-int64_t fpio_readall1(file_dec_t& fp, ds::Buf& buf) {
-    int64_t filesize = fs_size(fp.name.c_str());
-    if (filesize < 0) {
-        return -1;
-    }
-    buf.resize((size_t)filesize);
-    return read(fp.fd.fd, buf.base, (size_t)filesize);
-}
-
-int64_t fpio_readall2(file_dec_t& fp, std::string& buf) {
+int64_t fpio_readall1(file_dec_t& fp, std::string& buf) {
     int64_t filesize = fs_size(fp.name.c_str());
     if (filesize < 0) {
         return -1;
@@ -99,7 +90,7 @@ int64_t fpio_readall2(file_dec_t& fp, std::string& buf) {
     return read(fp.fd.fd, (void*)buf.data(), (size_t)filesize);
 }
 
-int64_t fpio_readall3(file_dec_t& fp, void* buf, size_t len) {
+int64_t fpio_readall2(file_dec_t& fp, void* buf, size_t len) {
     int64_t filesize = fs_size(fp.name.c_str());
     if (filesize < 0) {
         return -1;

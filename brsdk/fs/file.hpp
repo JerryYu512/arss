@@ -34,7 +34,6 @@
 #include <unistd.h>
 #include <string>
 #include <stdexcept>
-#include "brsdk/ds/buf.hpp"
 #include "brsdk/mix/noncopyable.hpp"
 #include "brsdk/str/string_piece.hpp"
 #include "file_def.hpp"
@@ -55,9 +54,8 @@ private:
         void (*sync)(Fp& fp);
         int64_t (*read)(Fp& fp, void* ptr, size_t len);
         int64_t (*write)(Fp& fp, const void* ptr, size_t len);
-        int64_t (*readall1)(Fp& fp, ds::Buf& buf);
-        int64_t (*readall2)(Fp& fp, std::string& buf);
-        int64_t (*readall3)(Fp& fp, void* buf, size_t len);
+        int64_t (*readall1)(Fp& fp, std::string& buf);
+        int64_t (*readall2)(Fp& fp, void* buf, size_t len);
         bool (*readline)(Fp& fp, std::string& str);
         int64_t (*readrange)(Fp& fp, std::string& str, size_t from, size_t to);
     };
@@ -112,18 +110,13 @@ public:
         return st.st_size;
     }
 
-    size_t readall(ds::Buf& buf) {
-        auto ret = op_->readall1(fp_, buf);
-        return ret < 0 ? 0 : (size_t)ret;
-    }
-
     size_t readall(std::string& str) {
-        auto ret = op_->readall2(fp_, str);
+        auto ret = op_->readall1(fp_, str);
         return ret < 0 ? 0 : (size_t)ret;
     }
 
     size_t readall(void* ptr, size_t len) {
-        auto ret = op_->readall3(fp_, ptr, len);
+        auto ret = op_->readall2(fp_, ptr, len);
         return ret < 0 ? 0 : (size_t)ret;
     }
 

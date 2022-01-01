@@ -2,7 +2,7 @@
 TARGET := brsdk
 # 单元测试目标
 UNIT_TEST_TARGET := $(TARGET)_ut
-ROOT_DIR := $(shell pwd)
+export ROOT_DIR := $(shell pwd)
 
 # 源码路径
 SRC_DIR := brsdk
@@ -70,7 +70,8 @@ endif
 # 示例代码编译
 .PHONY: demo
 demo: $(TARGET)
-	@make -C samples ARS_INC_DIR=$(ROOT_DIR)/include ARS_LIB_DIR=$(ROOT_DIR)/build OUTPUT_DIR=$(ROOT_DIR)/build/samples
+	@mkdir -p $(ROOT_DIR)/build/samples
+	@make -C samples OUTPUT_DIR=$(ROOT_DIR)/build/samples
 
 # 单元测试
 ut: $(TARGET) $(UT_OBJECTS)
@@ -191,7 +192,7 @@ clean:
 # dependencies
 -include $(DEPS)
 $(BUILD_DIR)/%.o: %.c* $(CONFIG_HEADER)
-	@echo "$(ECHO) \033[32m$(CXX) $<\033[0m"
+	@echo "$(ECHO) \033[32m$(CXX) $< -o $@\033[0m"
 	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi;\
 	$(CXX) $(OBJCCFLAG) -MM -MT $@ -MF $(patsubst %.o, %.d, $@) $<; \
 	$(CXX) $(OBJCCFLAG) $< -o $@

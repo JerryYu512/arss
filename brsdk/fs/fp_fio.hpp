@@ -29,7 +29,6 @@
 #pragma once
 
 #include "file_def.hpp"
-#include "brsdk/ds/buf.hpp"
 
 namespace brsdk {
 
@@ -42,9 +41,8 @@ int fpfio_seek(file_dec_t &fp, off_t off, int whence);
 void fpfio_sync(file_dec_t &fp);
 int64_t fpfio_read(file_dec_t &fp, void* ptr, size_t len);
 int64_t fpfio_write(file_dec_t &fp, const void* ptr, size_t len);
-int64_t fpfio_readall1(file_dec_t &fp, ds::Buf& buf);
-int64_t fpfio_readall2(file_dec_t &fp, std::string& buf);
-int64_t fpfio_readall3(file_dec_t &fp, void* buf, size_t len);
+int64_t fpfio_readall1(file_dec_t &fp, std::string& buf);
+int64_t fpfio_readall2(file_dec_t &fp, void* buf, size_t len);
 bool fpfio_readline(file_dec_t &fp, std::string& str);
 int64_t fpfio_readrange(file_dec_t& fp, std::string& str, size_t from, size_t to);
 

@@ -47,64 +47,100 @@ struct atype {      \
 typedef struct atype atype;\
 \
 static inline type* atype##_data(atype* p) {\
+    if (!p) { \
+        return NULL; \
+    }\
     return p->ptr;\
 }\
 \
-static inline int atype##_size(atype* p) {\
+static inline size_t atype##_size(atype* p) {\
+    if (!p) { \
+        return 0; \
+    }\
     return p->size;\
 }\
 \
-static inline int atype##_maxsize(atype* p) {\
+static inline size_t atype##_maxsize(atype* p) {\
+    if (!p) { \
+        return 0; \
+    }\
     return p->maxsize;\
 }\
 \
-static inline int atype##_empty(atype* p) {\
+static inline size_t atype##_empty(atype* p) {\
+    if (!p) { \
+        return 1; \
+    }\
     return p->size == 0;\
 }\
 \
-static inline type* atype##_at(atype* p, int pos) {\
-    if (pos < 0) {\
-        pos += p->size;\
+static inline type* atype##_at(atype* p, size_t pos) {\
+    assert(pos < p->size);\
+    if (!p || pos >= p->size) {\
+        return NULL; \
     }\
-    assert(pos >= 0 && pos < p->size);\
     return p->ptr + pos;\
 }\
 \
 static inline type* atype##_front(atype* p) {\
+    if (!p) { \
+        return NULL; \
+    }\
     return p->size == 0 ? NULL : p->ptr;\
 }\
 \
 static inline type* atype##_back(atype* p) {\
+    if (!p) { \
+        return NULL; \
+    }\
     return p->size == 0 ? NULL : p->ptr + p->size - 1;\
 }\
 \
-static inline void atype##_init(atype* p, int maxsize) {\
+static inline void atype##_init(atype* p, size_t maxsize) {\
+    if (!p) { \
+        return ; \
+    }\
     p->size = 0;\
     p->maxsize = maxsize;\
     BRSDK_ALLOC(p->ptr, sizeof(type) * maxsize);\
 }\
 \
 static inline void atype##_clear(atype* p) {\
+    if (!p) { \
+        return ; \
+    }\
     p->size = 0;\
     memset(p->ptr, 0, sizeof(type) * p->maxsize);\
 }\
 \
 static inline void atype##_cleanup(atype* p) {\
+    if (!p) { \
+        return ; \
+    }\
     BRSDK_FREE(p->ptr);\
     p->size = p->maxsize = 0;\
 }\
 \
-static inline void atype##_resize(atype* p, int maxsize) {\
+static inline void atype##_resize(atype* p, size_t maxsize) {\
+    if (!p) { \
+        return ; \
+    }\
     if (maxsize == 0) maxsize = ARRAY_INIT_SIZE;\
     p->ptr = (type*)brsdk::brsdk_realloc(p->ptr, sizeof(type) * maxsize, sizeof(type) * p->maxsize);\
     p->maxsize = maxsize;\
 }\
 \
 static inline void atype##_double_resize(atype* p) {\
+    if (!p) { \
+        return ; \
+    }\
     atype##_resize(p, p->maxsize * 2);\
 }\
 \
 static inline void atype##_push_back(atype* p, type* elem) {\
+    if (!p) { \
+        return ; \
+    }\
     if (p->size == p->maxsize) {\
         atype##_double_resize(p);\
     }\
@@ -114,52 +150,52 @@ static inline void atype##_push_back(atype* p, type* elem) {\
 \
 static inline void atype##_pop_back(atype* p) {\
     assert(p->size > 0);\
+    if (!p || p->size <= 0) { \
+        return ; \
+    }\
     p->size--;\
 }\
 \
-static inline void atype##_add(atype* p, type* elem, int pos) {\
-    if (pos < 0) {\
-        pos += static_cast<int>(p->size);\
+static inline void atype##_add(atype* p, type* elem, size_t pos) {\
+    assert(pos <= p->size);\
+    if (!p || pos > p->size) { \
+        return ; \
     }\
-    assert(pos >= 0 && pos <= static_cast<int>(p->size));\
     if (p->size == p->maxsize) {\
         atype##_double_resize(p);\
     }\
-    if (pos < static_cast<int>(p->size)) {\
+    if (pos < p->size) {\
         memmove(p->ptr + pos+1, p->ptr + pos, sizeof(type) * (p->size - pos));\
     }\
     p->ptr[pos] = *elem;\
     p->size++;\
 }\
 \
-static inline void atype##_del(atype* p, int pos) {\
-    if (pos < 0) {\
-        pos += static_cast<int>(p->size);\
+static inline void atype##_del(atype* p, size_t pos) {\
+    assert(pos < p->size);\
+    if (!p || pos >= p->size) { \
+        return ; \
     }\
-    assert(pos >= 0 && pos < static_cast<int>(p->size));\
     p->size--;\
-    if (pos < static_cast<int>(p->size)) {\
+    if (pos < p->size) {\
         memmove(p->ptr + pos, p->ptr + pos+1, sizeof(type) * (p->size - pos));\
     }\
 }\
 \
-static inline void atype##_del_nomove(atype* p, int pos) {\
-    if (pos < 0) {\
-        pos += static_cast<int>(p->size);\
+static inline void atype##_del_nomove(atype* p, size_t pos) {\
+    assert(pos < p->size);\
+    if (!p || pos >= p->size) { \
+        return ; \
     }\
-    assert(pos >= 0 && pos < static_cast<int>(p->size));\
     p->size--;\
-    if (pos < static_cast<int>(p->size)) {\
+    if (pos < p->size) {\
         p->ptr[pos] = p->ptr[p->size];\
     }\
 }\
 \
-static inline void atype##_swap(atype* p, int pos1, int pos2) {\
-    if (pos1 < 0) {\
-        pos1 += static_cast<int>(p->size);\
-    }\
-    if (pos2 < 0) {\
-        pos2 += static_cast<int>(p->size);\
+static inline void atype##_swap(atype* p, size_t pos1, size_t pos2) {\
+    if (!p || pos1 >= p->size || pos2 >= p->size) { \
+        return ; \
     }\
     type tmp = p->ptr[pos1];\
     p->ptr[pos1] = p->ptr[pos2];\

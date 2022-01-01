@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include "attr.hpp"
 #include "platform.hpp"
 
@@ -140,12 +141,16 @@
 #define BRSDK_ARRAY_SIZE(a) (sizeof(a) / sizeof(*(a)))
 /// 字符串字面量的长度计算
 #define BRSDK_STRLEN(s) (sizeof(s) - 1)
-/// 位置1
-#define BRSDK_BITSET(p, n) (*(p) |= (1u << (n)))
+///< 位置1
+#define BRSDK_BITMAP_SET(p, n) ((p)[(n) >> 3] |= (1 << ((n) & (CHAR_BIT - 1))))
 /// 位清0
-#define BRSDK_BITCLR(p, n) (*(p) &= ~(1u << (n)))
+#define BRSDK_BITMAP_CLR(p, n) ((p)[(n) >> 3] &= ~(1 << ((n) & (CHAR_BIT - 1))))
 /// 取位的值
-#define BRSDK_BITGET(i, n) ((i) & (1u << (n)))
+#define BRSDK_BITMAP_GET(p, n) ((p)[(n) >> 3] & (1 << ((n) & (CHAR_BIT - 1))))
+/// 数字的位操作
+#define BRSDK_BITNUM_TEST(num, bit) ((num) & (1u << (n)))
+#define BRSDK_BITNUM_SET(num, bit) (*(num) |= (1u << (bit)))
+#define BRSDK_BITNUM_CLEAR(num, bit) (*(num) &= ~(1u << (bit)))
 /// 回车
 #define BRSDK_CR '\r'
 /// 换行

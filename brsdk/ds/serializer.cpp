@@ -36,7 +36,7 @@ namespace brsdk {
 namespace ds {
 
 struct array_data {
-    DARRAY(uint8_t) bytes;
+    BRSDK_DAARAY(uint8_t) bytes;
 };
 
 static size_t array_write(void *param, const void *data, size_t size) {
