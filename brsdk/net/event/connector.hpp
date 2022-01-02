@@ -65,9 +65,9 @@ private:
 	};
 
 	// 最大重连间隔
-	static const int kMaxRetryDelayMs = 30 * 1000;
+	static const int kMaxRetryDelayMs;
 	// 初始重连间隔时间
-	static const int kInitRetryDelayMs = 500;
+	static const int kInitRetryDelayMs;
 
 	// 设置状态
 	void set_state(States s) { state_ = s; }

@@ -7,7 +7,7 @@ FLASGS = -Wall -std=c++11 -g -D__const__= -pipe -W -Wall -Wno-unused-parameter \
 			-fstack-protector-all -Wno-deprecated-declarations \
 			-Wno-class-memaccess \
 			-Wno-unused-result -Wno-maybe-uninitialized
-DEMOS = demo_atomic demo_co demo_crypto demo_ds demo_net
+DEMOS = demo_atomic demo_co demo_crypto demo_ds demo_net demo_net_echo
 
 all: $(DEMOS)
 	@echo "BUILD DEMO SUCCESS."
@@ -31,3 +31,7 @@ demo_ds:
 demo_net:
 	@echo "$(CXX) demo_net.cpp -o $(OUTPUT_DIR)/$@"
 	@$(CXX) demo_net.cpp -o $(OUTPUT_DIR)/$@ $(DEMO_INC) $(DEMO_LIBS) $(DEMO_LIB_PATH) $(FLASGS)
+
+demo_net_echo:
+	@echo "$(CXX) demo_net_echo.cpp -o $(OUTPUT_DIR)/$@"
+	@$(CXX) demo_net_echo.cpp -o $(OUTPUT_DIR)/$@ $(DEMO_INC) $(DEMO_LIBS) $(DEMO_LIB_PATH) $(FLASGS)

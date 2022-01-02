@@ -236,8 +236,9 @@ void TcpConnection::StopRead(void) {
 // 建立先连接,accept成功时
 void TcpConnection::ConnectEstablished(void) {
 	loop_->AssertInLoopThread();
-	assert(kConnected);
+	assert(state_ == kConnecting);
 
+	set_state(kConnected);
 	// 建立连接后就使能读数据
 	channel_->tie(shared_from_this());
 	channel_->EnableReading();

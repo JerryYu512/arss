@@ -738,7 +738,7 @@ socklen_t sock_addr_len(const sock_addr_t *addr) {
     return sizeof(sock_addr_t);
 }
 
-const char *sock_addr_str(sock_addr_t *addr, char *buf, int len) {
+const char *sock_addr_str(const sock_addr_t *addr, char *buf, int len) {
     char ip[BRSDK_SOCKADDR_STRLEN] = {0};
     uint16_t port = 0;
     if (addr->sa.sa_family == AF_INET) {

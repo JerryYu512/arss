@@ -161,7 +161,9 @@ void Logger::Impl::formatTime() {
     }
 }
 
-void Logger::Impl::finish() { }
+void Logger::Impl::finish() {
+    stream_ << "\n";
+}
 
 Logger::Logger(const char* mname, SourceFile file, int line) : impl_(INFO, 0, mname, file, line, nullptr) {}
 

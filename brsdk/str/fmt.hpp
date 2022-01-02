@@ -58,6 +58,18 @@ public:
     /// 字符串转bool值
     /// 1,y,Y,on,true,enable,yes
     static bool getboolean(const char* str);
+    
+    /**
+     * @brief 取bool值的字符串
+     * 
+     * @tparam T 
+     * @param v 
+     * @return const char* 
+     */
+    template <typename T>
+    static const char* boolean(T v) {
+        return v ? "true" : "false";
+    }
 
 private:
     char buf_[32];

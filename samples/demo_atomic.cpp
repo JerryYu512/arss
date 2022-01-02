@@ -19,7 +19,7 @@
  * 
  * @file demo_atomic.cpp
  * @brief 
- * @author Jerry.Yu (jerry.yu512outlook.com)
+ * @author Jerry.Yu (jerry.yu512@outlook.com)
  * @version 1.0.0
  * @date 2021-12-26
  * 
