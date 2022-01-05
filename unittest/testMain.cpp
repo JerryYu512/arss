@@ -6,6 +6,7 @@
 #include "brsdk/time/timestamp.hpp"
 #include "brsdk/time/timezone.hpp"
 #include "brsdk/time/timeiso8601.hpp"
+#include "brsdk/encoding/html-entities.hpp"
 
 using namespace brsdk;
 
@@ -75,4 +76,13 @@ TEST_CASE("time-date") {
 	char stdbuf[64] = "";
 	TimeISO8601::format(stdbuf, sizeof(stdbuf), &stdt);
 	MESSAGE(stdbuf);
+}
+
+TEST_CASE("encoding") {
+	char str[] = "432fsdhoi43294&$#&*%?:{<";
+	char dst[64] = "";
+
+	html_entities_encode(dst, str, strlen(str));
+
+	MESSAGE(dst);
 }

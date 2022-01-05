@@ -34,12 +34,6 @@
 
 namespace brsdk {
 
-static void *(*__malloc)(size_t) = ::malloc;
-static int (*__memalign)(void **, size_t, size_t) = ::posix_memalign;
-static void *(*__realloc)(void *, size_t) = ::realloc;
-static void *(*__calloc)(size_t, size_t) = ::calloc;
-static void (*__free)(void*) = ::free;
-
 static std::atomic_long s_alloc_cnt(0);
 static std::atomic_long s_free_cnt(0);
 
@@ -55,27 +49,9 @@ void memroy_check(void) {
     printf("Memcheck => alloc:%ld free:%ld\n", alloc_cnt(), free_cnt());
 }
 
-void brsdk_memory_init(const memory_conf_t &conf) {
-    if (conf.malloc) {
-        __malloc = conf.malloc;
-    }
-    if (conf.memalign) {
-        __memalign = conf.memalign;
-    }
-    if (conf.realloc) {
-        __realloc = conf.realloc;
-    }
-    if (conf.calloc) {
-        __calloc = conf.calloc;
-    }
-    if (conf.free) {
-        __free = conf.free;
-    }
-}
-
 void *brsdk_malloc(size_t size) {
     s_alloc_cnt++;
-    void *ptr = __malloc(size);
+    void *ptr = ::malloc(size);
     if (!ptr) {
         fprintf(stderr, "malloc failed!\n");
         return nullptr;
@@ -85,7 +61,7 @@ void *brsdk_malloc(size_t size) {
 
 int brsdk_memalign(void **ptr, size_t alignment, size_t size) {
     s_alloc_cnt++;
-    int ret = __memalign(ptr, alignment, size);
+    int ret = ::posix_memalign(ptr, alignment, size);
     if (ret != 0) {
         fprintf(stderr, "memalign failed!\n");
     }
@@ -96,7 +72,7 @@ int brsdk_memalign(void **ptr, size_t alignment, size_t size) {
 void *brsdk_realloc(void *oldptr, size_t newsize, size_t oldsize) {
     s_alloc_cnt++;
     s_free_cnt++;
-    void* ptr = __realloc(oldptr, newsize);
+    void* ptr = ::realloc(oldptr, newsize);
     if (!ptr) {
         fprintf(stderr, "realloc failed!\n");
         return nullptr;
@@ -109,7 +85,7 @@ void *brsdk_realloc(void *oldptr, size_t newsize, size_t oldsize) {
 
 void *brsdk_calloc(size_t nmemb, size_t size) {
     s_alloc_cnt++;
-    void* ptr =  __calloc(nmemb, size);
+    void* ptr =  ::calloc(nmemb, size);
     if (!ptr) {
         fprintf(stderr, "calloc failed!\n");
         return nullptr;
@@ -119,7 +95,7 @@ void *brsdk_calloc(size_t nmemb, size_t size) {
 
 void *brsdk_zalloc(size_t size) {
     s_alloc_cnt++;
-    void* ptr = __malloc(size);
+    void* ptr = ::malloc(size);
     if (!ptr) {
         fprintf(stderr, "malloc failed!\n");
         return nullptr;
@@ -130,7 +106,7 @@ void *brsdk_zalloc(size_t size) {
 
 void brsdk_free(void *ptr) {
     if (ptr) {
-        free(ptr);
+        ::free(ptr);
         ptr = NULL;
         s_free_cnt++;
     }

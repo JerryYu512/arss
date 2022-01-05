@@ -90,7 +90,7 @@ public:
 
     size_t capacity() const {
         MutexLockGuard lock(mutex_);
-        return queue_.capacity();
+        return queue_.max_size();
     }
 
 private:

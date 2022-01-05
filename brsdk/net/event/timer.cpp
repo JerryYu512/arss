@@ -37,6 +37,8 @@ namespace brsdk {
 
 namespace net {
 
+std::atomic_int64_t Timer::s_num_created_(0);
+
 namespace {
 
 // 创建时间句柄

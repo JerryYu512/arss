@@ -69,7 +69,7 @@ void darray_resize(const size_t element_size, struct darray *dst,
  * belows are the APIs
  */
 
-#define DARRAY(type)                    \
+#define BRSDK_DAARAY(type)                    \
     union {                             \
         struct darray da;               \
         struct {                        \
@@ -79,68 +79,68 @@ void darray_resize(const size_t element_size, struct darray *dst,
         };                              \
     }
 
-#define da_init(v) darray_init(&v.da)
+#define da_init(v) brsdk::ds::darray_init(&v.da)
 
-#define da_free(v) darray_free(&v.da)
+#define da_free(v) brsdk::ds::darray_free(&v.da)
 
 #define da_alloc_size(v) (sizeof(*v.array) * v.num)
 
-#define da_end(v) darray_end(sizeof(*v.array), &v.da)
+#define da_end(v) brsdk::ds::darray_end(sizeof(*v.array), &v.da)
 
 #define da_reserve(v, capacity) \
-        darray_reserve(sizeof(*v.array), &v.da, capacity)
+        brsdk::ds::darray_reserve(sizeof(*v.array), &v.da, capacity)
 
-#define da_resize(v, size) darray_resize(sizeof(*v.array), &v.da, size)
+#define da_resize(v, size) brsdk::ds::darray_resize(sizeof(*v.array), &v.da, size)
 
-#define da_copy(dst, src) darray_copy(sizeof(*dst.array), &dst.da, &src.da)
+#define da_copy(dst, src) brsdk::ds::darray_copy(sizeof(*dst.array), &dst.da, &src.da)
 
 #define da_copy_array(dst, src_array, n) \
-        darray_copy_array(sizeof(*dst.array), &dst.da, src_array, n)
+        brsdk::ds::darray_copy_array(sizeof(*dst.array), &dst.da, src_array, n)
 
-#define da_move(dst, src) darray_move(&dst.da, &src.da)
+#define da_move(dst, src) brsdk::ds::darray_move(&dst.da, &src.da)
 
-#define da_find(v, item, idx) darray_find(sizeof(*v.array), &v.da, item, idx)
+#define da_find(v, item, idx) brsdk::ds::darray_find(sizeof(*v.array), &v.da, item, idx)
 
-#define da_push_back(v, item) darray_push_back(sizeof(*v.array), &v.da, item)
+#define da_push_back(v, item) brsdk::ds::darray_push_back(sizeof(*v.array), &v.da, item)
 
-#define da_push_back_new(v) darray_push_back_new(sizeof(*v.array), &v.da)
+#define da_push_back_new(v) brsdk::ds::darray_push_back_new(sizeof(*v.array), &v.da)
 
 #define da_push_back_array(dst, src_array, n) \
-        darray_push_back_array(sizeof(*dst.array), &dst.da, src_array, n)
+        brsdk::ds::darray_push_back_array(sizeof(*dst.array), &dst.da, src_array, n)
 
 #define da_push_back_da(dst, src) \
-        darray_push_back_darray(sizeof(*dst.array), &dst.da, &src.da)
+        brsdk::ds::darray_push_back_darray(sizeof(*dst.array), &dst.da, &src.da)
 
 #define da_insert(v, idx, item) \
-        darray_insert(sizeof(*v.array), &v.da, idx, item)
+        brsdk::ds::darray_insert(sizeof(*v.array), &v.da, idx, item)
 
-#define da_insert_new(v, idx) darray_insert_new(sizeof(*v.array), &v.da, idx)
+#define da_insert_new(v, idx) brsdk::ds::darray_insert_new(sizeof(*v.array), &v.da, idx)
 
 #define da_insert_array(dst, idx, src_array, n) \
-        darray_insert_array(sizeof(*dst.array), &dst.da, idx, src_array, n)
+        brsdk::ds::darray_insert_array(sizeof(*dst.array), &dst.da, idx, src_array, n)
 
 #define da_insert_da(dst, idx, src) \
-        darray_insert_darray(sizeof(*dst.array), &dst.da, idx, &src.da)
+        brsdk::ds::darray_insert_darray(sizeof(*dst.array), &dst.da, idx, &src.da)
 
-#define da_erase(dst, idx) darray_erase(sizeof(*dst.array), &dst.da, idx)
+#define da_erase(dst, idx) brsdk::ds::darray_erase(sizeof(*dst.array), &dst.da, idx)
 
 #define da_erase_item(dst, item) \
-        darray_erase_item(sizeof(*dst.array), &dst.da, item)
+        brsdk::ds::darray_erase_item(sizeof(*dst.array), &dst.da, item)
 
 #define da_erase_range(dst, from, to) \
-        darray_erase_range(sizeof(*dst.array), &dst.da, from, to)
+        brsdk::ds::darray_erase_range(sizeof(*dst.array), &dst.da, from, to)
 
-#define da_pop_back(dst) darray_pop_back(sizeof(*dst.array), &dst.da);
+#define da_pop_back(dst) brsdk::ds::darray_pop_back(sizeof(*dst.array), &dst.da);
 
-#define da_join(dst, src) darray_join(sizeof(*dst.array), &dst.da, &src.da)
+#define da_join(dst, src) brsdk::ds::darray_join(sizeof(*dst.array), &dst.da, &src.da)
 
 #define da_split(dst1, dst2, src, idx) \
-        darray_split(sizeof(*src.array), &dst1.da, &dst2.da, &src.da, idx)
+        brsdk::ds::darray_split(sizeof(*src.array), &dst1.da, &dst2.da, &src.da, idx)
 
 #define da_move_item(v, from, to) \
-        darray_move_item(sizeof(*v.array), &v.da, from, to)
+        brsdk::ds::darray_move_item(sizeof(*v.array), &v.da, from, to)
 
-#define da_swap(v, idx1, idx2) darray_swap(sizeof(*v.array), &v.da, idx1, idx2)
+#define da_swap(v, idx1, idx2) brsdk::ds::darray_swap(sizeof(*v.array), &v.da, idx1, idx2)
 
 } // namespace ds
 

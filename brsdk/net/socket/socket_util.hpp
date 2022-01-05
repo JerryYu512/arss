@@ -315,7 +315,7 @@ const char* sock_addr_ip(const sock_addr_t* addr, char* ip, int len);
 // 获取端口
 uint16_t sock_addr_port(const sock_addr_t* addr);
 
-void sock_set_family(const sock_addr_t* addr, int family);
+void sock_set_family(sock_addr_t* addr, int family);
 
 // 设置ip
 int sock_set_ip(sock_addr_t* addr, const char* host);

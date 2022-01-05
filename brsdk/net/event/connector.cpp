@@ -36,6 +36,11 @@ namespace brsdk {
 
 namespace net {
 
+// 最大重连间隔
+const int Connector::kMaxRetryDelayMs = 30 * 1000;
+// 初始重连间隔时间
+const int Connector::kInitRetryDelayMs = 500;
+
 Connector::Connector(EventLoop* loop, const Address& server_addr)
 	: loop_(loop),
 	  server_addr_(server_addr),
@@ -124,6 +129,7 @@ void Connector::connecting(int sockfd) {
 	// 连接成功时调用的接口
 	channel_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
 	channel_->SetErrorCallback(std::bind(&Connector::HandleError, this));
+	channel_->EnableWriting();
 }
 
 void Connector::HandleWrite(void) {
@@ -141,6 +147,7 @@ void Connector::HandleWrite(void) {
 		} else {
 			set_state(kConnected);
 			if (connect_) {
+				LOG_TRACE << "Call new connection";
 				newConnectionCallback_(sockfd);
 			} else {
 				sock_close(sockfd);

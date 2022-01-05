@@ -64,16 +64,7 @@ int64_t fpfio_write(file_dec_t& fp, const void* ptr, size_t len) {
     return fwrite(ptr, 1, len, fp.fd.fp);
 }
 
-int64_t fpfio_readall1(file_dec_t& fp, ds::Buf& buf) {
-    int64_t filesize = fs_size(fp.name.c_str());
-    if (filesize < 0) {
-        return -1;
-    }
-    buf.resize((size_t)filesize);
-    return fread(buf.base, 1, (size_t)filesize, fp.fd.fp);
-}
-
-int64_t fpfio_readall2(file_dec_t& fp, std::string& buf) {
+int64_t fpfio_readall1(file_dec_t& fp, std::string& buf) {
     int64_t filesize = fs_size(fp.name.c_str());
     if (filesize < 0) {
         return -1;
@@ -82,7 +73,7 @@ int64_t fpfio_readall2(file_dec_t& fp, std::string& buf) {
     return fread((void*)buf.data(), 1, (size_t)filesize, fp.fd.fp);
 }
 
-int64_t fpfio_readall3(file_dec_t& fp, void* buf, size_t len) {
+int64_t fpfio_readall2(file_dec_t& fp, void* buf, size_t len) {
     int64_t filesize = fs_size(fp.name.c_str());
     if (filesize < 0) {
         return -1;

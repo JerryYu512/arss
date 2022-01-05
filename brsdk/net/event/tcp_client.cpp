@@ -143,6 +143,7 @@ void TcpClient::NewConnection(int sockfd) {
 		MutexLockGuard lock(mutex_);
 		connection_ = conn;
 	}
+	LOG_INFO << "create connection : " << connection_.get();
 	conn->ConnectEstablished();
 }
 

@@ -59,6 +59,13 @@ Acceptor::~Acceptor() {
 
 void Acceptor::listen(void) {
 	loop_->AssertInLoopThread();
+	listening_ = true;
+	accept_socket_.listen();
+	accept_channel_.EnableReading();
+}
+
+void Acceptor::HandleRead(void) {
+	loop_->AssertInLoopThread();
 	Address peeraddr;
 	int connfd = accept_socket_.accept(peeraddr);
 	if (connfd >= 0) {
