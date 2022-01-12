@@ -56,9 +56,11 @@ public:
     struct utsname info_;
 };
 
+// 直接初始化静态的信息
 static UnameInfo uname_info;
 
-static int (*system_fun)(const char *) = system;
+// 默认系统call
+static int (*system_fun)(const char *) = ::system;
 
 void set_default_system_call(int (*fun)(const char *)) {
     if (fun) {
@@ -83,7 +85,7 @@ const char *get_sysname(void) { return uname_info.info_.sysname; }
 // 获取处理器信息
 const char *get_processor(void) {
     // TODO
-    return nullptr;
+    return "null";
 }
 
 // 获取系统版本

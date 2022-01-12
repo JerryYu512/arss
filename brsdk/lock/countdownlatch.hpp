@@ -31,6 +31,10 @@
 
 namespace brsdk {
 
+/**
+ * @brief 自动计数的条件变量类
+ * 
+ */
 class CountDownLatch : noncopyable {
 public:
     explicit CountDownLatch(int count);
@@ -42,9 +46,9 @@ public:
     int getCount() const;
 
 private:
-    mutable MutexLock mutex_;
-    Condition condition_ GUARDED_BY(mutex_);
-    int count_ GUARDED_BY(mutex_);
+    mutable MutexLock mutex_;                   ///< 锁
+    Condition condition_ GUARDED_BY(mutex_);    ///< 条件变量
+    int count_ GUARDED_BY(mutex_);              ///< 计数条件
 };
 
 }  // namespace brsdk

@@ -4,7 +4,7 @@
  * Copyright © 2021 <wotsen>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the “Software�?), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  *
@@ -36,6 +36,11 @@ namespace brsdk {
 
 namespace thread {
 
+/**
+ * @brief 按线程为单位的线程全局变量单例类
+ * 
+ * @tparam T 
+ */
 template <typename T>
 class ThreadLocalSingleton : noncopyable {
 public:

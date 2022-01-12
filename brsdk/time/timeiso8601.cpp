@@ -45,7 +45,7 @@ static const uint16_t DayOffset[13] = {
     0, 306, 337, 0, 31, 61, 92, 122, 153, 184, 214, 245, 275
 };
 
-static int parse_2d(const unsigned char* const p, size_t i, uint16_t* vp) {
+static int _parse_2d(const unsigned char* const p, size_t i, uint16_t* vp) {
     unsigned char d0, d1;
     if (((d0 = p[i + 0] - '0') > 9) ||
         ((d1 = p[i + 1] - '0') > 9))
@@ -54,7 +54,7 @@ static int parse_2d(const unsigned char* const p, size_t i, uint16_t* vp) {
     return 0;
 }
 
-static int parse_4d(const unsigned char* const p, size_t i, uint16_t* vp) {
+static int _parse_4d(const unsigned char* const p, size_t i, uint16_t* vp) {
     unsigned char d0, d1, d2, d3;
     if (((d0 = p[i + 0] - '0') > 9) ||
         ((d1 = p[i + 1] - '0') > 9) ||
@@ -65,7 +65,7 @@ static int parse_4d(const unsigned char* const p, size_t i, uint16_t* vp) {
     return 0;
 }
 
-static void rdn_to_ymd(uint32_t rdn, uint16_t* yp, uint16_t* mp, uint16_t* dp) {
+static void _rdn_to_ymd(uint32_t rdn, uint16_t* yp, uint16_t* mp, uint16_t* dp) {
     uint32_t Z, H, A, B;
     uint16_t y, m, d;
 
@@ -84,7 +84,7 @@ static void rdn_to_ymd(uint32_t rdn, uint16_t* yp, uint16_t* mp, uint16_t* dp) {
     *dp = d - DayOffset[m];
 }
 
-static void rdn_to_struct_tm(uint32_t rdn, struct tm* tmp) {
+static void _rdn_to_struct_tm(uint32_t rdn, struct tm* tmp) {
     uint32_t Z, H, A, B;
     uint16_t C, y, m, d;
 
@@ -107,7 +107,7 @@ static void rdn_to_struct_tm(uint32_t rdn, struct tm* tmp) {
     tmp->tm_yday = d - 1;               /* Day of year [0,365]           */
 }
 
-static size_t timestamp_format_internal(char* dst, size_t len, const timeiso8601_t* tsp,
+static size_t _timestamp_format_internal(char* dst, size_t len, const timeiso8601_t* tsp,
                                         const int precision) {
     unsigned char *p;
     uint64_t sec;
@@ -128,7 +128,7 @@ static size_t timestamp_format_internal(char* dst, size_t len, const timeiso8601
     sec = tsp->sec + tsp->offset * 60 + EPOCH;
     rdn = sec / 86400;
 
-    rdn_to_ymd(rdn, &y, &m, &d);
+    _rdn_to_ymd(rdn, &y, &m, &d);
 
    /*
     *           1
@@ -194,7 +194,7 @@ static size_t timestamp_format_internal(char* dst, size_t len, const timeiso8601
     return dlen;
 }
 
-bool TimeISO8601::parse(const char* str, size_t len, timeiso8601_t* tsp) {
+static bool _parse(const char* str, size_t len, timeiso8601_t* tsp) {
     const unsigned char *cur, *end;
     unsigned char ch;
     uint16_t year, month, day, hour, min, sec;
@@ -212,9 +212,9 @@ bool TimeISO8601::parse(const char* str, size_t len, timeiso8601_t* tsp) {
     ch = cur[10];
     if (!(ch == 'T' || ch == ' ' || ch == 't')) return 1;
 
-    if (parse_4d(cur, 0, &year) || year < 1 || parse_2d(cur, 5, &month) || month < 1 ||
-        month > 12 || parse_2d(cur, 8, &day) || day < 1 || day > 31 || parse_2d(cur, 11, &hour) ||
-        hour > 23 || parse_2d(cur, 14, &min) || min > 59 || parse_2d(cur, 17, &sec) || sec > 59)
+    if (_parse_4d(cur, 0, &year) || year < 1 || _parse_2d(cur, 5, &month) || month < 1 ||
+        month > 12 || _parse_2d(cur, 8, &day) || day < 1 || day > 31 || _parse_2d(cur, 11, &hour) ||
+        hour > 23 || _parse_2d(cur, 14, &min) || min > 59 || _parse_2d(cur, 17, &sec) || sec > 59)
         return false;
 
     if (day > 28 && day > Date::days_of_month(year, month)) return false;
@@ -256,7 +256,7 @@ bool TimeISO8601::parse(const char* str, size_t len, timeiso8601_t* tsp) {
          */
         if (cur + 5 < end || !(ch == '+' || ch == '-') || cur[2] != ':') return false;
 
-        if (parse_2d(cur, 0, &hour) || hour > 23 || parse_2d(cur, 3, &min) || min > 59) return false;
+        if (_parse_2d(cur, 0, &hour) || hour > 23 || _parse_2d(cur, 3, &min) || min > 59) return false;
 
         offset = hour * 60 + min;
         if (ch == '-') offset *= -1;
@@ -273,37 +273,9 @@ bool TimeISO8601::parse(const char* str, size_t len, timeiso8601_t* tsp) {
     return true;
 }
 
-int TimeISO8601::compare(const timeiso8601_t* t1, const timeiso8601_t* t2) {
-    if (t1->sec < t2->sec)
-        return -1;
-    if (t1->sec > t2->sec)
-        return 1;
-    if (t1->nsec < t2->nsec)
-        return -1;
-    if (t1->nsec > t2->nsec)
-        return 1;
-    return 0;
-}
-
-/*
- *          1         2         3
- * 12345678901234567890123456789012345 (+ null-terminator)
- * YYYY-MM-DDThh:mm:ssZ
- * YYYY-MM-DDThh:mm:ss±hh:mm
- * YYYY-MM-DDThh:mm:ss.123Z
- * YYYY-MM-DDThh:mm:ss.123±hh:mm
- * YYYY-MM-DDThh:mm:ss.123456Z
- * YYYY-MM-DDThh:mm:ss.123456±hh:mm
- * YYYY-MM-DDThh:mm:ss.123456789Z
- * YYYY-MM-DDThh:mm:ss.123456789±hh:mm
- */
-
-size_t TimeISO8601::format(char* dst, size_t len, const timeiso8601_t* tsp) {
+static size_t _format(char* dst, size_t len, const timeiso8601_t* tsp) {
     uint32_t f;
     int precision;
-
-    if (!valid(tsp))
-        return 0;
 
     f = tsp->nsec;
     if (!f)
@@ -313,21 +285,12 @@ size_t TimeISO8601::format(char* dst, size_t len, const timeiso8601_t* tsp) {
         else if ((f %    1000) == 0) precision = 6;
         else                         precision = 9;
     }
-    return timestamp_format_internal(dst, len, tsp, precision);
+    return _timestamp_format_internal(dst, len, tsp, precision);
 }
 
-size_t TimeISO8601::format_precision(char* dst, size_t len, const timeiso8601_t* tsp, int precision) {
-    if (!valid(tsp) || precision < 0 || precision > 9)
-        return 0;
-    return timestamp_format_internal(dst, len, tsp, precision);
-}
-
-static struct tm* timeiso8601_to_tm(const timeiso8601_t* tsp, struct tm* tmp, const bool local) {
+static struct tm* _timeiso8601_to_tm(const timeiso8601_t* tsp, struct tm* tmp, const bool local) {
     uint64_t sec;
     uint32_t rdn, sod;
-
-    if (!TimeISO8601::valid(tsp))
-        return NULL;
 
     sec = tsp->sec + RDN_OFFSET;
     if (local)
@@ -335,28 +298,97 @@ static struct tm* timeiso8601_to_tm(const timeiso8601_t* tsp, struct tm* tmp, co
     rdn = sec / 86400;
     sod = sec % 86400;
 
-    rdn_to_struct_tm(rdn, tmp);
+    _rdn_to_struct_tm(rdn, tmp);
     tmp->tm_sec  = sod % 60; sod /= 60;
     tmp->tm_min  = sod % 60; sod /= 60;
     tmp->tm_hour = sod;
     return tmp;
 }
 
-struct tm* TimeISO8601::to_tm_local(const timeiso8601_t* tsp, struct tm* tmp) {
-    return timeiso8601_to_tm(tsp, tmp, true);
+TimeISO8601::TimeISO8601(const char* str, size_t len) {
+    ::memset(&iso8601_, 0, sizeof(iso8601_));
+
+    if (_parse(str, len, &iso8601_) && valid()) {
+        _format(time_, sizeof(time_), &iso8601_);
+    } else {
+        ::memset(&iso8601_, 0, sizeof(iso8601_));
+        ::memset(time_, 0, sizeof(time_));
+    }
 }
 
-struct tm* TimeISO8601::to_tm_utc(const timeiso8601_t* tsp, struct tm* tmp) {
-    return timeiso8601_to_tm(tsp, tmp, false);
+TimeISO8601::TimeISO8601(const timeiso8601_t& tm) : iso8601_(tm) {
+    if (valid()) {
+        _format(time_, sizeof(time_), &iso8601_);
+    } else {
+        ::memset(&iso8601_, 0, sizeof(iso8601_));
+        ::memset(time_, 0, sizeof(time_));
+    }
 }
 
-bool TimeISO8601::valid(const timeiso8601_t* tsp) {
-    const int64_t sec = tsp->sec + tsp->offset * 60;
+bool TimeISO8601::valid(void) {
+    const int64_t sec = iso8601_.sec + iso8601_.offset * 60;
     if (sec < MIN_SEC || sec > MAX_SEC ||
-        tsp->nsec < 0 || tsp->nsec > 999999999 ||
-        tsp->offset < -1439 || tsp->offset > 1439)
+        iso8601_.nsec < 0 || iso8601_.nsec > 999999999 ||
+        iso8601_.offset < -1439 || iso8601_.offset > 1439)
         return false;
     return true;
+}
+
+timeiso8601_t TimeISO8601::time(void) {
+    return iso8601_;
+}
+
+std::string TimeISO8601::format(void) {
+    return time_;
+}
+
+std::string TimeISO8601::format(int precision) {
+    if (precision < 0 || precision > 9)
+        return "";
+
+    char buf[64] = "";
+    if (_timestamp_format_internal(buf, sizeof(buf), &iso8601_, precision)) {
+        return buf;
+    } else {
+        return "";
+    }
+}
+
+bool TimeISO8601::format(char *buf, size_t len) {
+    if (buf && valid()) {
+        memcpy(buf, time_, std::min(len, sizeof(time_)));
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool TimeISO8601::format(char *buf, size_t len, int precision) {
+    if (!buf || !valid() || precision < 0 || precision > 9) {
+        return false;
+    }
+
+    return _timestamp_format_internal(buf, len, &iso8601_, precision);
+}
+
+struct tm TimeISO8601::to_utc(void) {
+    struct tm tm;
+
+    if (valid()) {
+        _timeiso8601_to_tm(&iso8601_, &tm, false);
+    }
+
+    return tm;
+}
+
+struct tm TimeISO8601::to_local(void) {
+    struct tm tm;
+    
+    if (valid()) {
+        _timeiso8601_to_tm(&iso8601_, &tm, true);
+    }
+
+    return tm;
 }
 
 } // namespace brsdk

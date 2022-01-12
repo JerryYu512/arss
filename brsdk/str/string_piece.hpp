@@ -4,7 +4,7 @@
  * Copyright © 2021 <wotsen>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the “Software�?), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * 
@@ -154,7 +154,7 @@ public:
 
 #ifdef HAVE_TYPE_TRAITS
 // This makes vector<StringPiece> really fast for some STL implementations
-template<> struct __type_traits<ars::sdk::StringPiece> {
+template<> struct __type_traits<brsdk::str::StringPiece> {
   typedef __true_type    has_trivial_default_constructor;
   typedef __true_type    has_trivial_copy_constructor;
   typedef __true_type    has_trivial_assignment_operator;

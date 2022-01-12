@@ -41,9 +41,9 @@
 namespace brsdk {
 
 /// 留白字符
-#define ARS_SPACE_CHARS     " \t\r\n"
+#define BRSDK_SPACE_CHARS     " \t\r\n"
 /// 成对字符
-#define ARS_PAIR_CHARS      "{}[]()<>\"\"\'\'``"
+#define BRSDK_PAIR_CHARS      "{}[]()<>\"\"\'\'``"
 
 typedef std::map<std::string, std::string> KeyValue;
 

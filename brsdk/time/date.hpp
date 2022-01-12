@@ -34,12 +34,10 @@
 
 namespace brsdk {
 
-///
-/// Date in Gregorian calendar.
-///
-/// This class is immutable.
-/// It's recommended to pass it by value, since it's passed in register on x64.
-///
+/**
+ * @brief 格林威治日期，儒略日计数
+ * 
+ */
 class Date : public copyable {
 public:
     struct YearMonthDay {
@@ -48,52 +46,72 @@ public:
         int day;    // [1..31]
     };
 
-    static const int kDaysPerWeek = 7;
-    static const int kJulianDayOf1970_01_01;
+    static const int kDaysPerWeek = 7;          ///< 每星期的天数
+    static const int kJulianDayOf1970_01_01;    ///< 起始儒略日，格林威治时间的中午开始
 
     ///
-    /// Constucts an invalid Date.
+    /// 非法日期
     ///
     Date() : julianDayNumber_(0) {}
 
     ///
-    /// Constucts a yyyy-mm-dd Date.
+    /// 类似 yyyy-mm-dd
     ///
     /// 1 <= month <= 12
     Date(int year, int month, int day);
 
     ///
-    /// Constucts a Date from Julian Day Number.
+    /// 指定儒略日开始
     ///
     explicit Date(int julianDayNum) : julianDayNumber_(julianDayNum) {}
 
     ///
-    /// Constucts a Date from struct tm
+    /// 指定时间
     ///
     explicit Date(const struct tm&);
 
-    // default copy/assignment/dtor are Okay
-
+    /**
+     * @brief 交换时间
+     * 
+     * @param that 
+     */
     void swap(Date& that) { std::swap(julianDayNumber_, that.julianDayNumber_); }
 
+    /**
+     * @brief 判断是否合法时间
+     * 
+     * @return true 
+     * @return false 
+     */
     bool valid() const { return julianDayNumber_ > 0; }
 
-    ///
-    /// Converts to yyyy-mm-dd format.
-    ///
+    /**
+     * @brief 转换到 yyyy-mm-dd 日期格式
+     * 
+     * @return std::string 日期
+     */
     std::string toIsoString() const;
 
+    /**
+     * @brief 获取年月日结构体
+     * 
+     * @return struct YearMonthDay 日期值
+     */
     struct YearMonthDay yearMonthDay() const;
 
+    ///< 年
     int year() const { return yearMonthDay().year; }
 
+    ///< 月
     int month() const { return yearMonthDay().month; }
 
+    ///< 日
     int day() const { return yearMonthDay().day; }
 
-    // [0, 1, ..., 6] => [Sunday, Monday, ..., Saturday ]
+    ///< [0, 1, ..., 6] => [Sunday, Monday, ..., Saturday ]
     int weekDay() const { return (julianDayNumber_ + 1) % kDaysPerWeek; }
 
+    ///< 儒略日
     int julianDayNumber() const { return julianDayNumber_; }
 
     /**
@@ -115,7 +133,7 @@ public:
     }
 
     /**
-     * @brief 月份字符串转数字
+     * @brief 英文月份字符串转数字
      *
      * @param month 月
      * @return int 月
@@ -123,7 +141,7 @@ public:
     static int month_atoi(const char* month);
 
     /**
-     * @brief 月份数字转字符串
+     * @brief 月份数字转英文字符串
      *
      * @param month 月
      * @return const char* 月
@@ -131,7 +149,7 @@ public:
     static const char* month_itoa(int month);
 
     /**
-     * @brief 星期字符串转数字
+     * @brief 英文星期字符串转数字
      *
      * @param weekday 周
      * @return int 周
@@ -139,7 +157,7 @@ public:
     static int weekday_atoi(const char* weekday);
 
     /**
-     * @brief 星期数字转字符串
+     * @brief 星期数字转英文字符串
      *
      * @param weekday 周
      * @return int 周
@@ -147,7 +165,7 @@ public:
     static const char* weekday_itoa(int weekday);
 
 private:
-    int julianDayNumber_;
+    int julianDayNumber_;   ///< 儒略日
 };
 
 inline bool operator<(Date x, Date y) { return x.julianDayNumber() < y.julianDayNumber(); }

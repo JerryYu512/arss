@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <assert.h>
+#include "timeiso8601.hpp"
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
@@ -191,16 +192,49 @@ char* Timestamp::duration_fmt(time_t sec, char* buf) {
     return buf;
 }
 
+char* Timestamp::duration_fmt(struct tm* tm, char* buf) {
+    sprintf(buf, BRSDK_TIME_FMT, (int)tm->tm_hour, (int)tm->tm_min, (int)tm->tm_sec);
+    return buf;
+}
+
 char* Timestamp::datetime_fmt(datetime_t* dt, char* buf) {
     sprintf(buf, BRSDK_DATETIME_FMT, dt->year, dt->month, dt->day, dt->hour, dt->min, dt->sec);
     return buf;
 }
 
-char* Timestamp::gmtime_fmt(time_t time, char* buf) {
+char* Timestamp::gmtime_fmt(time_t time, char* buf, const char* zonename) {
     struct tm* tm = gmtime(&time);
-    // strftime(buf, ARS_GMTIME_FMT_BUFLEN, "%a, %d %b %Y %H:%M:%S GMT", tm);
-    sprintf(buf, BRSDK_GMTIME_FMT, s_weekdays[tm->tm_wday], tm->tm_mday, s_months[tm->tm_mon],
-            tm->tm_year + 1900, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    return Timestamp::gmtime_fmt(tm, buf, zonename);
+}
+
+char* Timestamp::gmtime_fmt(struct tm* tm, char* buf, const char* zonename) {
+    sprintf(buf, BRSDK_GMTIME_FMT, s_weekdays[tm->tm_wday], s_months[tm->tm_mon],
+            tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, zonename, tm->tm_year + 1900);
+    return buf;
+}
+
+char* Timestamp::utctime_fmt(time_t time, char* buf, int timezone) {
+    if (!buf) {
+        return nullptr;
+    }
+
+    timeiso8601_t iso = {
+        time,
+        0,
+        timezone,
+    };
+
+    std::string utctime = TimeISO8601(iso).format(0);
+
+    sprintf(buf, "%s", utctime.c_str());
+
+    return buf;
+}
+
+char* Timestamp::utctime_fmt(struct tm* tm, char* buf) {
+    sprintf(buf, BRSDK_UTCIME_FMT, tm->tm_year + 1900, tm->tm_mon + 1,
+        tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    
     return buf;
 }
 

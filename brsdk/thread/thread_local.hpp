@@ -35,6 +35,11 @@ namespace brsdk {
 
 namespace thread {
 
+/**
+ * @brief 线程内的全局变量
+ * 
+ * @tparam T 
+ */
 template <typename T>
 class ThreadLocal : noncopyable {
 public:
@@ -62,7 +67,7 @@ private:
     }
 
 private:
-    pthread_key_t pkey_;
+    pthread_key_t pkey_;    ///< 同一个key，所有的线程都可见，但是get/set只对自己的线程有效
 };
 
 }  // namespace thread

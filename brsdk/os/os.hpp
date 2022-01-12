@@ -49,33 +49,74 @@ int syscmd(const char *cmd);
  * 
  */
 typedef struct {
-    unsigned long total; ///< kb
-    unsigned long free;  ///< kb
+    unsigned long total; ///< 总大小，kb
+    unsigned long free;  ///< 剩余大小，kb
 } meminfo_t;
 
 // 参考 : https://github.com/ThePhD/infoware
 
-// 获取平台架构
+/**
+ * @brief 获取运行时平台架构
+ * 
+ * @return const char* 架构名称
+ */
 const char *get_arch(void);
-// 获取平台信息
+
+/**
+ * @brief 获取运行时平台信息
+ * 
+ * @return const char* 平台
+ */
 const char *get_platform(void);
-// 获取系统名称
+
+/**
+ * @brief 获取系统名称
+ * 
+ * @return const char* 名称
+ */
 const char *get_name(void);
-// 获取处理器信息
+
+/**
+ * @brief 获取处理器信息
+ * 
+ * @return const char* 处理器信息
+ */
 const char *get_processor(void);
-// 获取系统版本
+
+/**
+ * @brief 获取系统版本
+ * 
+ * @return const char* 版本
+ */
 const char *get_version(void);
 
-// 获取cpu核心数
+/**
+ * @brief 获取cpu核心数
+ * 
+ * @return int -1-异常
+ */
 int get_ncpu(void);
 
-// 获取内存
+/**
+ * @brief 获取内存信息
+ * 
+ * @param mem 内存
+ * @return int <0异常
+ */
 int get_meminfo(meminfo_t &mem);
 
-// 环境变量
+/**
+ * @brief 获取环境变量
+ * 
+ * @param name 环境变量名
+ * @return std::string 变量值
+ */
 std::string env(const char* name);
 
-// run as a daemon
+/**
+ * @brief 以守护进程运行
+ * 
+ */
 void daemon(void);
 
 } // namespace os

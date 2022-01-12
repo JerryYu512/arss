@@ -80,6 +80,13 @@ struct Localtime {
     Localtime(time_t offset, bool dst, int arrb) : gmtOffset(offset), isDst(dst), arrbIdx(arrb) {}
 };
 
+class InitTimeZone {
+public:
+    InitTimeZone() {
+        tzset();
+    }
+};
+
 inline void fillHMS(unsigned seconds, struct tm* utc) {
     utc->tm_sec = seconds % 60;
     unsigned minutes = seconds / 60;
@@ -87,6 +94,9 @@ inline void fillHMS(unsigned seconds, struct tm* utc) {
     utc->tm_hour = minutes / 60;
 }
 
+static InitTimeZone init_timezone;
+
+// 一天的秒数
 const int kSecondsPerDay = 24 * 60 * 60;
 
 struct TimeZone::Data {
@@ -300,6 +310,35 @@ time_t TimeZone::fromUtcTime(int year, int month, int day, int hour, int minute,
     int secondsInDay = hour * 3600 + minute * 60 + seconds;
     time_t days = date.julianDayNumber() - Date::kJulianDayOf1970_01_01;
     return days * kSecondsPerDay + secondsInDay;
+}
+
+const char* TimeZone::timezoneName(void) {
+    return tzname[0];
+}
+
+time_t TimeZone::timezoneOffset(void) {
+    struct timeval tv;
+    struct timezone tz;
+
+    ::gettimeofday(&tv, &tz);
+
+    return tz.tz_minuteswest * 60;
+
+    // time_t t1, t2;
+    // struct tm tm_local, tm_utc;
+
+    // time(&t1);
+    // t2 = t1;
+
+    // // 获取本地时间
+    // localtime_r(&t1, &tm_local);
+    // t1 = mktime(&tm_local);
+
+    // // 获取格林威治时间
+    // gmtime_r(&t2, &tm_utc);
+    // t2 = mktime(&tm_utc);
+
+    // return (t1 - t2) / 3600;
 }
 
 } // namespace brsdk

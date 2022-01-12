@@ -29,6 +29,8 @@
 #pragma once
 #include <inttypes.h>
 #include <stddef.h>
+#include <string.h>
+#include <string>
 
 namespace brsdk {
 
@@ -38,39 +40,85 @@ typedef struct {
     int16_t offset; /* Offset from UTC in minutes [-1439, 1439] */
 } timeiso8601_t;
 
+/**
+ * @brief iso8601
+ * 
+ */
 class TimeISO8601 {
+private:
+    timeiso8601_t iso8601_; ///< 时间戳
+    char time_[64];         ///< 时间戳，字符串
+
 public:
+    TimeISO8601(const std::string& str) : TimeISO8601(str.c_str(), str.length()) {}
+    TimeISO8601(const char* str) : TimeISO8601(str, strlen(str)) {}
+    TimeISO8601(const char* str, size_t len);
+    TimeISO8601(const timeiso8601_t& tm);
+
     /**
-     * @brief 时间字符串解析
+     * @brief 获取时间戳
      * 
-     * @param str ISO 8601字符串
-     * @param len 字符串长度
-     * @param tsp[out] 时间戳
-     * @return true 成功
-     * @return false 失败
+     * @return timeiso8601_t 
      */
-    static bool parse(const char* str, size_t len, timeiso8601_t* tsp);
+    timeiso8601_t time(void);
 
     /**
      * @brief 时间格式化
      * 
-     * @param dst[out] 存放字符串
-     * @param len dst内存长度
-     * @param tsp 时间戳
-     * @return size_t 字符串长度
+     * @return std::string 
      */
-    static size_t format(char* dst, size_t len, const timeiso8601_t* tsp);
+    std::string format(void);
 
     /**
-     * @brief 时间格式化，更精确
+     * @brief 时间格式化
      * 
-     * @param dst[out] 存放字符串
-     * @param len dst内存长度
-     * @param tsp 时间戳
-     * @param precision 纳秒及长度精度
-     * @return size_t 字符串长度
+     * @param precision 小数部分精度(0-9)
+     * @return std::string 
      */
-    static size_t format_precision(char* dst, size_t len, const timeiso8601_t* tsp, int precision);
+    std::string format(int precision);
+
+    /**
+     * @brief 时间格式化
+     * 
+     * @param buf 内存
+     * @param len 内存长度
+     * @return true 成功
+     * @return false 失败
+     */
+    bool format(char *buf, size_t len);
+
+    /**
+     * @brief 时间格式化
+     * 
+     * @param buf 内存
+     * @param len 内存长度
+     * @param precision 小数部分精度(0-9)
+     * @return true 成功
+     * @return false 失败
+     */
+    bool format(char *buf, size_t len, int precision);
+
+    /**
+     * @brief 转为utc时间
+     * 
+     * @return struct tm 
+     */
+    struct tm to_utc(void);
+
+    /**
+     * @brief 转为本地时间
+     * 
+     * @return struct tm 
+     */
+    struct tm to_local(void);
+
+    /**
+     * @brief 是否合法时间
+     * 
+     * @return true 合法
+     * @return false 不合法
+     */
+    bool valid(void);
 
     /**
      * @brief 时间比较
@@ -79,34 +127,25 @@ public:
      * @param tsp2 时间2
      * @return int 0-相等，1-tsp1大，-1-tsp2大
      */
-    static int compare(const timeiso8601_t* tsp1, const timeiso8601_t* tsp2);
-
-    /**
-     * @brief 判断合法性
-     * 
-     * @param tsp 时间
-     * @return true 合法
-     * @return false 非法
-     */
-    static bool valid(const timeiso8601_t* tsp);
-
-    /**
-     * @brief 转为utc时间
-     * 
-     * @param tsp 时间戳
-     * @param tmp tm时间
-     * @return struct tm* 为空为失败
-     */
-    static struct tm* to_tm_utc(const timeiso8601_t* tsp, struct tm* tmp);
-
-    /**
-     * @brief 转为本地时间
-     * 
-     * @param tsp 时间戳
-     * @param tmp tm时间
-     * @return struct tm* 为空为失败
-     */
-    static struct tm* to_tm_local(const timeiso8601_t* tsp, struct tm* tmp);
+    static int compare(const timeiso8601_t& tsp1, const timeiso8601_t& tsp2) {
+        if (tsp1.sec < tsp2.sec) return -1;
+        if (tsp1.sec > tsp2.sec) return 1;
+        if (tsp1.nsec < tsp2.nsec) return -1;
+        if (tsp1.nsec > tsp2.nsec) return 1;
+        return 0;
+    }
 };
+
+inline bool operator==(const timeiso8601_t& tsp1, const timeiso8601_t& tsp2) {
+    return 0 == TimeISO8601::compare(tsp1, tsp2);
+}
+
+inline bool operator<(const timeiso8601_t& tsp1, const timeiso8601_t& tsp2) {
+    return -1 == TimeISO8601::compare(tsp1, tsp2);
+}
+
+inline bool operator>(const timeiso8601_t& tsp1, const timeiso8601_t& tsp2) {
+    return 1 == TimeISO8601::compare(tsp1, tsp2);
+}
 
 } // namespace brsdk

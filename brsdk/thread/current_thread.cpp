@@ -30,6 +30,13 @@
 #include <cxxabi.h>
 #include <execinfo.h>
 #include <stdlib.h>
+#include <type_traits>
+#include <sys/syscall.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <string>
+#include "brsdk/time/timestamp.hpp"
 
 namespace brsdk {
 
@@ -41,6 +48,49 @@ __thread int t_tidStringLength = 6;
 __thread const char* t_threadName = "unknown";
 
 static_assert(std::is_same<int, pid_t>::value, "pid_t should be int");
+
+pid_t gettid(void) { return static_cast<pid_t>(::syscall(SYS_gettid)); }
+
+void afterFork() {
+    t_cachedTid = 0;
+    t_threadName = "main";
+    tid();
+    // no need to call pthread_atfork(NULL, NULL, &afterFork);
+}
+
+class ThreadNameInitializer {
+public:
+    ThreadNameInitializer() {
+        t_threadName = "main";
+        tid();
+        pthread_atfork(NULL, NULL, &afterFork);
+    }
+};
+
+ThreadNameInitializer init;
+
+void cacheTid(void) {
+    if (t_cachedTid == 0) {
+        t_cachedTid = gettid();
+        t_tidStringLength = snprintf(t_tidString, sizeof t_tidString, "%6d", t_cachedTid);
+    }
+}
+
+int tid(void) {
+    if (__builtin_expect(t_cachedTid == 0, 0)) {
+        cacheTid();
+    }
+    return t_cachedTid;
+}
+
+bool isMainThread(void) { return tid() == ::getpid(); }
+
+void sleepUsec(int64_t usec) {
+    struct timespec ts = {0, 0};
+    ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
+    ts.tv_nsec = static_cast<long>(usec % Timestamp::kMicroSecondsPerSecond * 1000);
+    ::nanosleep(&ts, NULL);
+}
 
 std::string stackTrace(bool demangle) {
     std::string stack;

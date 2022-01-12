@@ -39,9 +39,20 @@ namespace brsdk {
 
 namespace str {
 
-class Fmt  // : noncopyable
+/**
+ * @brief 格式化，类似printf
+ * 
+ */
+class Fmt
 {
 public:
+    /**
+     * @brief 简单格式化数字
+     * 
+     * @tparam T 数字类型，需要是算术类型
+     * @param fmt 格式
+     * @param val 值
+     */
     template <typename T>
     Fmt(const char* fmt, T val) {
         static_assert(std::is_arithmetic<T>::value == true, "Must be arithmetic type");
@@ -50,9 +61,13 @@ public:
         assert(static_cast<size_t>(length_) < sizeof buf_);
     }
 
+    // 获取格式化结果
     const char* data() const { return buf_; }
+
+    // 格式化结果字符串长度
     int length() const { return length_; }
 
+    // printf，结果返回为string
     static std::string format(const char* fmt, ...);
 
     /// 字符串转bool值
@@ -76,8 +91,7 @@ private:
     int length_;
 };
 
-// Explicit instantiations
-
+// 实例化
 template Fmt::Fmt(const char* fmt, char);
 
 template Fmt::Fmt(const char* fmt, short);
@@ -93,8 +107,9 @@ template Fmt::Fmt(const char* fmt, float);
 template Fmt::Fmt(const char* fmt, double);
 
 /**
- * convert string to built-in types 
- *   - Returns 0 if the conversion failed, and the errno will be ERANGE or EINVAL.
+ * @brief 字符串转到值
+ * 
+ * @param s 字符串
  */
 bool to_bool(const char* s);
 int32_t to_int32(const char* s);
@@ -110,30 +125,20 @@ inline uint32_t to_uint32(const std::string& s) { return to_uint32(s.c_str()); }
 inline uint64_t to_uint64(const std::string& s) { return to_uint64(s.c_str()); }
 inline double to_double(const std::string& s) { return to_double(s.c_str()); }
 
-// NOTE: low-version NDK not provide std::to_string
-template <typename T>
-static inline std::string to_string(const T& t) {
-    std::ostringstream oss;
-    oss << t;
-    return oss.str();
-}
-
-template <typename T>
-static inline T from_string(const std::string& str) {
-    T t;
-    std::istringstream iss(str);
-    iss >> t;
-    return t;
-}
-
-// Format quantity n in SI units (k, M, G, T, P, E).
-// The returned string is atmost 5 characters long.
-// Requires n >= 0
+/**
+ * @brief 转换数字为国际数字计数单位(k, M, G, T, P, E)
+ * 
+ * @param n 数字
+ * @return std::string 字符串
+ */
 std::string formatSI(int64_t n);
 
-// Format quantity n in IEC (binary) units (Ki, Mi, Gi, Ti, Pi, Ei).
-// The returned string is atmost 6 characters long.
-// Requires n >= 0
+/**
+ * @brief 转换数字为国际电工委员会数字计数单位(Ki, Mi, Gi, Ti, Pi, Ei)
+ * 
+ * @param n 数字
+ * @return std::string 字符串
+ */
 std::string formatIEC(int64_t n);
 
 }  // namespace str

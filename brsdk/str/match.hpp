@@ -18,7 +18,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * @file match.hpp
- * @brief 
+ * @brief 常用的正则匹配
  * @author wotsen (astralrovers@outlook.com)
  * @version 1.0.0
  * @date 2021-07-11
@@ -34,14 +34,33 @@ namespace brsdk {
 
 namespace str {
 
+// 网址:[a-zA-z]+://[^\s]*
+// qq:[1-9]\d{4,}
+// html:<(.*)(.*)>.*<\/\1>|<(.*) \/>
+// 密码，(由数字/大写字母/小写字母/标点符号组成，四种都必有，8位以上):	(?=^.{8,}$)(?=.*\d)(?=.*\W+)(?=.*[A-Z])(?=.*[a-z])(?!.*\n).*$
+// 简单密码:^[a-z0-9_-]{6,18}$
+// 用户名:^[a-z0-9_-]{3,16}$
+// 日期（年-月-日）:(\d{4}|\d{2})-((1[0-2])|(0?[1-9]))-(([12][0-9])|(3[01])|(0?[1-9]))
+// 日期(月/日/年):((1[0-2])|(0?[1-9]))/(([12][0-9])|(3[01])|(0?[1-9]))/(\d{4}|\d{2})
+// 汉字:[\u4e00-\u9fa5]
+// 中文及全角标点符号(字符):[\u3000-\u301e\ufe10-\ufe19\ufe30-\ufe44\ufe50-\ufe6b\uff01-\uffee]
+// 中国大陆固定号码:(\d{4}-|\d{3}-)?(\d{8}|\d{7})
+// 中国大陆邮编:[1-9]\d{5}
+// 仅字母:^[A-Za-z]+$
+// 数字，字母、下划线:^\w+$
+
 // 邮箱校验
 bool email_match(const std::string &email);
+
 // 手机号码校验
 bool zh_cellphone_number_match(const std::string &number);
+
 // 身份证校验
 bool id_card_match(const std::string &number);
+
 // ipv4 校验
 bool ipv4_match(const std::string &ip);
+
 // ipv6 校验
 bool ipv6_match(const std::string &ip);
 

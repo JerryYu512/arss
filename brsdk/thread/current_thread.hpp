@@ -29,49 +29,69 @@
 #pragma once
 
 #include "brsdk/mix/types.hpp"
+#include <string>
 
 namespace brsdk {
 
 namespace thread {
+
 // internal，线程变量
+
+// 线程id
 extern __thread int t_cachedTid;
+
+// 线程id字符串
 extern __thread char t_tidString[32];
+
+// 线程id字符串长度
 extern __thread int t_tidStringLength;
+
+// 线程名称
 extern __thread const char* t_threadName;
 
-/// 缓存tid
-void cacheTid();
+/**
+ * @brief 获取线程id
+ * 
+ * @return int 线程id
+ */
+int tid(void);
 
-/// tid
-inline int tid() {
-    if (__builtin_expect(t_cachedTid == 0, 0)) {
-        cacheTid();
-    }
-    return t_cachedTid;
-}
-
-/// tid字符串
-inline const char* tidString()  // for logging
+///< tid字符串
+static inline const char* tidString(void)
 {
     return t_tidString;
 }
 
-/// tid长度
-inline int tidStringLength()  // for logging
+///< tid长度
+static inline int tidStringLength(void)
 {
     return t_tidStringLength;
 }
 
-/// 线程名
-inline const char* name() { return t_threadName; }
+///< 线程名
+static inline const char* name() { return t_threadName; }
 
-/// 是否是主线程
-bool isMainThread();
+/**
+ * @brief 是否为主线程
+ * 
+ * @return true 是
+ * @return false 否
+ */
+bool isMainThread(void);
 
-/// 休眠微秒
-void sleepUsec(int64_t usec);  // for testing
+/**
+ * @brief 当前线程休眠
+ * 
+ * @param usec 时间值，us
+ */
+void sleepUsec(int64_t usec);
 
-/// 栈跟踪
+/**
+ * @brief 当前线程栈信息
+ * 
+ * @param demangle 是否记录帧信息
+ * @return std::string 栈信息字符串
+ */
 std::string stackTrace(bool demangle);
 
 }  // namespace thread

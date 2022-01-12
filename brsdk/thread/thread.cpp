@@ -4,14 +4,14 @@
  * Copyright © 2021 <wotsen>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the “Software�?), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  *
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * THE SOFTWARE IS PROVIDED “AS IS�?, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
  * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
@@ -44,28 +44,6 @@
 namespace brsdk {
 
 namespace thread {
-
-namespace detail {
-
-pid_t gettid() { return static_cast<pid_t>(::syscall(SYS_gettid)); }
-
-void afterFork() {
-    t_cachedTid = 0;
-    t_threadName = "main";
-    tid();
-    // no need to call pthread_atfork(NULL, NULL, &afterFork);
-}
-
-class ThreadNameInitializer {
-public:
-    ThreadNameInitializer() {
-        t_threadName = "main";
-        tid();
-        pthread_atfork(NULL, NULL, &afterFork);
-    }
-};
-
-ThreadNameInitializer init;
 
 struct ThreadData {
     ThreadFunc func_;
@@ -108,32 +86,14 @@ struct ThreadData {
     }
 };
 
-void* startThread(void* obj) {
+static void* startThread(void* obj) {
     ThreadData* data = static_cast<ThreadData*>(obj);
     data->runInThread();
     delete data;
     return NULL;
 }
 
-}  // namespace detail
-
-void cacheTid() {
-    if (t_cachedTid == 0) {
-        t_cachedTid = detail::gettid();
-        t_tidStringLength = snprintf(t_tidString, sizeof t_tidString, "%6d", t_cachedTid);
-    }
-}
-
-bool isMainThread() { return tid() == ::getpid(); }
-
-void sleepUsec(int64_t usec) {
-    struct timespec ts = {0, 0};
-    ts.tv_sec = static_cast<time_t>(usec / Timestamp::kMicroSecondsPerSecond);
-    ts.tv_nsec = static_cast<long>(usec % Timestamp::kMicroSecondsPerSecond * 1000);
-    ::nanosleep(&ts, NULL);
-}
-
-std::atomic_int32_t Thread::numCreated_;
+std::atomic_int32_t Thread::numCreated_(0);
 
 Thread::Thread(ThreadFunc func, const std::string& n)
     : started_(false),
@@ -144,6 +104,7 @@ Thread::Thread(ThreadFunc func, const std::string& n)
       func_(std::move(func)),
       name_(n),
       latch_(1) {
+    numCreated_++;
     setDefaultName();
 }
 
@@ -157,7 +118,7 @@ Thread::Thread(ThreadFunc fun, pthread_attr_t *attr, const std::string& name)
       name_(name),
       latch_(1)
 {
-
+    numCreated_++;
     setDefaultName();
 }
 
@@ -167,7 +128,7 @@ Thread::~Thread() {
     }
 }
 
-void Thread::setDefaultName() {
+void Thread::setDefaultName(void) {
     int num = numCreated_;
     if (name_.empty()) {
         char buf[32];
@@ -180,8 +141,8 @@ void Thread::start() {
     assert(!started_);
     started_ = true;
     // FIXME: move(func_)
-    detail::ThreadData* data = new detail::ThreadData(func_, name_, &tid_, &latch_);
-    if (pthread_create(&pthreadId_, attr_, &detail::startThread, data)) {
+    ThreadData* data = new ThreadData(func_, name_, &tid_, &latch_);
+    if (pthread_create(&pthreadId_, attr_, &startThread, data)) {
         started_ = false;
         delete data;  // or no delete?
         LOG_SYSFATAL << "Failed in pthread_create";
@@ -194,7 +155,7 @@ void Thread::start() {
 int Thread::join(void **ret) {
     assert(started_);
     assert(!joined_);
-    // 已经调用过了。
+    // 已经调用过了
     if (joined_) {
         return -1;
     }
