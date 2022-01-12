@@ -34,6 +34,7 @@
 #include <utility>  // std::forward
 
 namespace brsdk {
+namespace crypto {
 
 /**
  * @brief leveldb中的随机数实现
@@ -60,7 +61,7 @@ public:
     }
 
 private:
-    uint32_t _seed;
+    uint32_t _seed; // 随机种子
 };
 
 ////////////////////////////////////////////////////////////////
@@ -91,4 +92,5 @@ public:
     result_type operator()(const param_type& parm) { return base_t::operator()(engine_, parm); }
 };
 
+}  // namespace crypto
 }  // namespace brsdk

@@ -29,7 +29,6 @@
 #include "thread_pool.hpp"
 #include <assert.h>
 #include <stdio.h>
-#include "brsdk/err/exception.hpp"
 
 namespace brsdk {
 
@@ -131,11 +130,6 @@ void ThreadPool::runInThread() {
                 task();
             }
         }
-    } catch (const Exception& ex) {
-        fprintf(stderr, "exception caught in ThreadPool %s\n", name_.c_str());
-        fprintf(stderr, "reason: %s\n", ex.what());
-        fprintf(stderr, "stack trace: %s\n", ex.stackTrace());
-        abort();
     } catch (const std::exception& ex) {
         fprintf(stderr, "exception caught in ThreadPool %s\n", name_.c_str());
         fprintf(stderr, "reason: %s\n", ex.what());

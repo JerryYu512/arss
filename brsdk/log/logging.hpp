@@ -86,13 +86,22 @@ public:
 
     LogStream& stream() { return impl_.stream_; }
 
+    ///< 日志等级
     static LogLevel logLevel();
+
+    ///< 设置日志等级
     static void setLogLevel(LogLevel level);
 
     typedef void (*OutputFunc)(const char* msg, int len);
     typedef void (*FlushFunc)();
+
+    ///< 设置日志输出自定义接口
     static void setOutput(OutputFunc);
+
+    ///< 设置日志刷新接口
     static void setFlush(FlushFunc);
+
+    ///< 设置时区
     static void setTimeZone(const TimeZone& tz);
 
     // TODO:Add module
@@ -104,11 +113,11 @@ private:
         void formatTime();
         void finish();
 
-        Timestamp time_;
-        LogStream stream_;
-        LogLevel level_;
-        int line_;
-        SourceFile basename_;
+        Timestamp time_;        ///< 时间戳
+        LogStream stream_;      ///< 日志流
+        LogLevel level_;        ///< 日志等级
+        int line_;              ///< 行号
+        SourceFile basename_;   ///< 文件名
         LogLevel logLevel_;
     };
 
@@ -142,6 +151,7 @@ private:
 #define LOG_WARN brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, brsdk::Logger::WARN).stream()
 #define LOG_ERROR brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, brsdk::Logger::ERROR).stream()
 #define LOG_FATAL brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, brsdk::Logger::FATAL).stream()
+
 #define LOG_SYSERR brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, false).stream()
 #define LOG_SYSFATAL brsdk::Logger(CUSTOM_MODULE_NAME, __FILE__, __LINE__, true).stream()
 

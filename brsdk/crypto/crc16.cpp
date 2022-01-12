@@ -30,6 +30,8 @@
 
 namespace brsdk {
 
+namespace crypto {
+
 /*
  * Copyright 2001-2010 Georges Menie (www.menie.org)
  * Copyright 2010-2012 Salvatore Sanfilippo (adapted to Redis coding style)
@@ -116,5 +118,7 @@ uint16_t crc16(const void* p, size_t n, uint16_t crc) {
     }
     return crc;
 }
+
+} // namespace crypto
 
 } // namespace brsdk

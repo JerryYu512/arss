@@ -30,6 +30,8 @@
 
 namespace brsdk {
 
+namespace crypto {
+
 /**
  * @brief 计算crc32
  * 
@@ -41,11 +43,40 @@ namespace brsdk {
 unsigned int crc32(unsigned int crc, const unsigned char *buffer, unsigned int size);
 
 /// 使用msb计算crc
+
+/**
+ * @brief msb初始化
+ * 
+ */
 void crc32_msb_init(void);
+
+/**
+ * @brief msb crc32计算
+ * 
+ * @param crc 上次的crc
+ * @param buffer 数据
+ * @param size 数据长度
+ * @return unsigned int crc32
+ */
 unsigned int crc32_msb(unsigned int crc, const unsigned char *buffer, unsigned int size);
 
 /// 使用lsb计算crc
+
+/**
+ * @brief lsb初始化
+ * 
+ */
 void crc32_lsb_init(void);
+
+/**
+ * @brief lsb crc32计算
+ * 
+ * @param crc 上次的crc
+ * @param buffer 数据
+ * @param size 数据长度
+ * @return unsigned int crc32
+ */
 unsigned int crc32_lsb(unsigned int crc, const unsigned char *buffer, unsigned int size);
 
+} // namespace crypto
 } // namespace brsdk

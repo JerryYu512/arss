@@ -31,12 +31,14 @@
 #include <stdio.h>
 
 namespace brsdk {
+namespace crypto {
 
 /**
  * @brief 生成uuid,如果是linux系统，则读取文件
  * 
- * @param s 
+ * @param s 结果
  */
 void uuid_generate(char s[37]);
 
 } // namespace brsdk
+} // namespace crypto

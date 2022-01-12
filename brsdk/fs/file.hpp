@@ -46,6 +46,7 @@ namespace fs {
 class File {
 private:
     typedef file_dec_t Fp;
+    // 文件操作接口
     struct Fop {
         Fp (*open)(const char* filepath, const char* mode);
         bool (*valid)(Fp& fp);
@@ -60,7 +61,7 @@ private:
         int64_t (*readrange)(Fp& fp, std::string& str, size_t from, size_t to);
     };
 
-    static Fop fops[FILE_BACKEND_NUM];
+    static Fop fops[FILE_BACKEND_NUM];  ///< 操作集
 
 public:
     File(file_backend_type type = FILE_BACKEND_FIO) {
@@ -76,10 +77,28 @@ public:
         }
     }
 
+    File(const char* filepath, const char* mode="r+", file_backend_type type = FILE_BACKEND_FIO) : File(type) {
+        if (open(filepath, mode) < 0) {
+            throw std::runtime_error("open file failed");
+        }
+    }
+
     ~File() { close(); }
 
+    /**
+     * @brief Get the fd object
+     * 
+     * @return file_dec_t* 文件描述
+     */
     file_dec_t* get_fd() { return &fp_; }
 
+    /**
+     * @brief 打开文件
+     * 
+     * @param filepath 路径
+     * @param mode 模式
+     * @return int 0-成功，-1失败
+     */
     int open(const char* filepath, const char* mode) {
         close();
         if (!filepath) {
@@ -93,23 +112,30 @@ public:
         }
     }
 
+    ///< 关闭文件
     void close() { op_->close(fp_); }
 
+    ///< 定位
     int seek(off_t off, int whence) { return op_->seek(fp_, off, whence); }
 
+    ///< 同步到磁盘
     void sync() { op_->sync(fp_); }
 
+    ///< 读
     size_t read(void* ptr, size_t len) { return op_->read(fp_, ptr, len); }
 
+    ///< 写
     size_t write(const void* ptr, size_t len) { return op_->write(fp_, ptr, len); }
 
-    size_t size() {
+    ///< 大小
+    size_t size(void) {
         struct stat st;
         memset(&st, 0, sizeof(st));
         stat(fp_.name.c_str(), &st);
         return st.st_size;
     }
 
+    ///< 读所有内容
     size_t readall(std::string& str) {
         auto ret = op_->readall1(fp_, str);
         return ret < 0 ? 0 : (size_t)ret;
@@ -120,16 +146,18 @@ public:
         return ret < 0 ? 0 : (size_t)ret;
     }
 
+    ///< 读一行
     bool readline(std::string& str) { return op_->readline(fp_, str); }
 
+    ///< 读一段
     int readrange(std::string& str, size_t from = 0, size_t to = 0) {
         int64_t ret = op_->readrange(fp_, str, from, to);
         return ret < 0 ? 0 : static_cast<int>(ret);
     }
 
 private:
-    Fp fp_;
-    Fop* op_;
+    Fp fp_;     ///< 描述符
+    Fop* op_;   ///< 操作
 };
 
 // read small file < 64KB

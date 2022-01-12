@@ -40,12 +40,14 @@ namespace brsdk {
 namespace net {
 
 #define BRSDK_SOCKADDR_STRLEN sizeof(((struct sockaddr_un*)(NULL))->sun_path)
-#define BRSDK_SOCKADDR_LEN(addr) brsdk::sock_addr_len((brsdk::sock_addr_t*)addr)
-#define BRSDK_SOCKADDR_STR(addr, buf) brsdk::sock_addr_str((brsdk::sock_addr_t*)addr, buf, sizeof(buf))
-#define BRSDK_SOCKADDR_PRINT(addr) brsdk::sock_addr_print((brsdk::sock_addr_t*)addr)
+#define BRSDK_SOCKADDR_LEN(addr) brsdk::net::sock_addr_len((brsdk::net::sock_addr_t*)addr)
+#define BRSDK_SOCKADDR_STR(addr, buf) brsdk::net::sock_addr_str((brsdk::net::sock_addr_t*)addr, buf, sizeof(buf))
+#define BRSDK_SOCKADDR_PRINT(addr) brsdk::net::sock_addr_print((brsdk::net::sock_addr_t*)addr)
 
+///< 非法套接字
 #define BRSDK_INVALID_SOCKET -1
 
+///< poll状态
 enum {
     poll_in = POLLIN,
     poll_out = POLLOUT,
@@ -57,16 +59,35 @@ enum {
  * 
  */
 typedef union {
-    struct sockaddr sa;
-    struct sockaddr_in sin;
-    struct sockaddr_in6 sin6;
-    struct sockaddr_un sun;
+    struct sockaddr sa;         ///< 通用地址头
+    struct sockaddr_in sin;     ///< ipv4
+    struct sockaddr_in6 sin6;   ///< ipv6
+    struct sockaddr_un sun;     ///< unix
 } sock_addr_t;
 
-static inline int socket_errno() {
+/**
+ * @brief 网络错误码
+ * 
+ * @return int 
+ */
+static inline int socket_errno(void) {
     return errno;
 }
 
+///< 套接字错误码取反
+static inline int socket_errno_negative() {
+    int err = socket_errno();
+    return err > 0 ? -err : -1;
+}
+
+/**
+ * @brief poll
+ * 
+ * @param fds 
+ * @param nfds 
+ * @param timeout 
+ * @return int 
+ */
 static inline int poll(struct pollfd *fds, nfds_t nfds, int timeout) {
     return ::poll(fds, nfds, timeout);
 }
@@ -110,17 +131,13 @@ static inline int sock_tcp_creat(int family = AF_INET) {
     return sock_creat(family, SOCK_STREAM, 0);
 }
 
+///< 非阻塞tcp套接字
 static inline int sock_tcp_nonblock_creat(int family = AF_INET) {
     return sock_creat(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
 }
 
-static inline int socket_errno_negative() {
-    int err = socket_errno();
-    return err > 0 ? -err : -1;
-}
-
 /**
- * @brief 获取错误码
+ * @brief 获取套接字错误码
  * 
  * @param sockfd 
  * @return int 
@@ -147,7 +164,8 @@ int sock_pair(int family, int type, int protocol, int sv[2]);
  */
 int sock_bind(int fd, const char* ip, int port);
 
-static inline int sock_unix_bind(int fd, const char* ip) { return sock_bind(fd, ip, -1); }
+///< 绑定unix地址
+static inline int sock_unix_bind(int fd, const char* path) { return sock_bind(fd, path, -1); }
 
 /**
  * @brief 监听套接字
@@ -290,6 +308,7 @@ int sock_set_recv_buf_len(int fd, size_t len);
 // 设置发送缓冲区
 int sock_set_send_buf_len(int fd, size_t len);
 
+// 地址族
 int sock_family(int fd);
 
 // 通过fd获取本地地址
@@ -301,6 +320,7 @@ int sock_get_peer_name(int fd, sock_addr_t& addr);
 // 是否是连接到自己
 bool sock_is_self_connect(int sockfd);
 
+// 地址长度
 socklen_t sock_addr_len(const sock_addr_t* addr);
 
 // ip地址转为网络字节序
@@ -315,7 +335,8 @@ const char* sock_addr_ip(const sock_addr_t* addr, char* ip, int len);
 // 获取端口
 uint16_t sock_addr_port(const sock_addr_t* addr);
 
-void sock_set_family(sock_addr_t* addr, int family);
+// 设置地址族
+void sock_set_family(const sock_addr_t* addr, int family);
 
 // 设置ip
 int sock_set_ip(sock_addr_t* addr, const char* host);
@@ -332,16 +353,19 @@ static inline void sock_set_path(sock_addr_t* addr, const char* path) {
     memcpy(addr->sun.sun_path, path, strlen(path) < sizeof(addr->sun.sun_path) ? strlen(path) : sizeof(addr->sun.sun_path));
 }
 
+// 获取unix域路径
 static inline void sock_get_path(const sock_addr_t* addr, char* path, size_t len) {
     memcpy(path, addr->sun.sun_path, strlen(path) < sizeof(addr->sun.sun_path) ? len : sizeof(addr->sun.sun_path));
 }
 
+// 打印地址
 static inline void sock_addr_print(sock_addr_t* addr) {
     char buf[BRSDK_SOCKADDR_STRLEN] = {0};
     sock_addr_str(addr, buf, sizeof(buf));
     puts(buf);
 }
 
+// 创建套接字并绑定
 static inline int sock_fast_bind(int port, const char *ip, int type) {
     sock_addr_t addr;
     memset(&addr, 0, sizeof(addr));
@@ -369,6 +393,7 @@ static inline int sock_fast_bind(int port, const char *ip, int type) {
     return fd;
 }
 
+// 创建绑定并监听
 static inline int sock_fast_listen(int port, const char *ip, int type=SOCK_STREAM) {
     int fd = sock_fast_bind(port, ip, type);
     if (fd < 0) {

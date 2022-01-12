@@ -33,6 +33,7 @@
 
 namespace brsdk {
 
+///< 不允许负值拷贝
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(Type) BRSDK_DISABLE_COPY(Type)
 #endif
@@ -41,7 +42,8 @@ namespace brsdk {
     Class(const Class&) = delete; \
     Class& operator=(const Class&) = delete;
 
-#define ARS_SINGLETON_DECL(Class) \
+///< 单例声明
+#define BRSDK_SINGLETON_DECL(Class) \
 public:                           \
     static Class* instance();     \
     static void exitInstance();   \
@@ -51,6 +53,7 @@ private:                          \
     static Class* s_pInstance;    \
     static std::mutex s_mutex;
 
+///< 单例实现
 #define BRSDK_SINGLETON_IMPL(Class)        \
     Class* Class::s_pInstance = NULL;    \
     std::mutex Class::s_mutex;           \
@@ -86,12 +89,18 @@ struct has_no_destroy {
 };
 }  // namespace detail
 
+/**
+ * @brief 单例模板类
+ * 
+ * @tparam T 实际类型
+ */
 template <typename T>
 class Singleton : noncopyable {
 public:
     Singleton() = delete;
     ~Singleton() = delete;
 
+    ///< 获取实例
     static T& instance() {
         pthread_once(&ponce_, &Singleton::init);
         assert(value_ != NULL);
@@ -99,6 +108,7 @@ public:
     }
 
 private:
+    ///< 懒加载
     static void init() {
         value_ = new T();
         if (!detail::has_no_destroy<T>::value) {
@@ -106,6 +116,7 @@ private:
         }
     }
 
+    ///< 释放
     static void destroy() {
         typedef char T_must_be_complete_type[sizeof(T) == 0 ? -1 : 1];
         T_must_be_complete_type dummy;
@@ -116,7 +127,7 @@ private:
     }
 
 private:
-    static pthread_once_t ponce_;
+    static pthread_once_t ponce_;   ///< 仅仅创建一次
     static T* value_;
 };
 

@@ -33,22 +33,35 @@
 
 namespace brsdk {
 
+namespace crypto {
+
 /**
  * @brief 计算crc16
  * 
  * @param s 数据
  * @param n 长度
  * @param crc 前次的crc值，主要用于校验大文件时需要分段
- * @return uint16_t 
+ * @return uint16_t crc16值
  */
 uint16_t crc16(const void* s, size_t n, uint16_t crc);
 
-/// 少量数据的校验
+/**
+ * @brief 一次性校验少量数据
+ * 
+ * @param s 数据指针
+ * @param n 长度
+ * @return uint16_t crc16值
+ */
 static inline uint16_t crc16(const void* s, size_t n) {
     return crc16(s, n, 0);
 }
 
-/// 字符串校验
+/**
+ * @brief 字符串crc16
+ * 
+ * @param s 字符串
+ * @return uint16_t crc16值
+ */
 static inline uint16_t crc16(const char* s) {
     return crc16(s, strlen(s));
 }
@@ -64,5 +77,7 @@ template<typename S>
 inline uint16_t crc16(const S& s) {
     return crc16(s.data(), s.size());
 }
+
+} // namespace crypto
 
 } // namespace brsdk

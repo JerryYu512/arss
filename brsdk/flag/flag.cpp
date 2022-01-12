@@ -423,7 +423,7 @@ std::vector<std::string> parse_command_line_flags(int argc, char** argv) {
         FLG_config = it->second;
     } else if (!v.empty()) {
 		if (pystring::endswith(v[0], ".conf") || pystring::endswith(v[0], "config")) {
-            if (brsdk::fs::fs_exists(v[0].c_str())) FLG_config = v[0];
+            if (brsdk::fs::exists(v[0].c_str())) FLG_config = v[0];
 		}
     }
 

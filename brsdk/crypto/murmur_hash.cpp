@@ -36,6 +36,7 @@
 #include "murmur_hash.hpp"
 
 namespace brsdk {
+namespace crypto {
 
 //-----------------------------------------------------------------------------
 //
@@ -144,4 +145,5 @@ uint64_t murmur_hash64(const void* key, size_t len, uint64_t seed) {
     return h;
 }
 
+}  // namespace crypto
 }  // namespace brsdk

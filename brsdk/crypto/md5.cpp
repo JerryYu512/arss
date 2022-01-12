@@ -30,6 +30,7 @@
 #include <string.h>
 
 namespace brsdk {
+namespace crypto {
 
 static const uint8_t *md5_body(md5_t *ctx, const uint8_t *data, size_t size);
 
@@ -270,4 +271,5 @@ static const uint8_t *md5_body(md5_t *ctx, const uint8_t *data, size_t size) {
     return p;
 }
 
+}  // namespace crypto
 }  // namespace brsdk

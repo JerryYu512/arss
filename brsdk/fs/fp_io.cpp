@@ -82,7 +82,7 @@ int64_t fpio_write(file_dec_t& fp, const void* ptr, size_t len) {
 }
 
 int64_t fpio_readall1(file_dec_t& fp, std::string& buf) {
-    int64_t filesize = fs_size(fp.name.c_str());
+    int64_t filesize = fs::filesize(fp.name.c_str());
     if (filesize < 0) {
         return -1;
     }
@@ -91,7 +91,7 @@ int64_t fpio_readall1(file_dec_t& fp, std::string& buf) {
 }
 
 int64_t fpio_readall2(file_dec_t& fp, void* buf, size_t len) {
-    int64_t filesize = fs_size(fp.name.c_str());
+    int64_t filesize = fs::filesize(fp.name.c_str());
     if (filesize < 0) {
         return -1;
     }
@@ -121,7 +121,7 @@ bool fpio_readline(file_dec_t& fp, std::string& str) {
 }
 
 int64_t fpio_readrange(file_dec_t& fp, std::string& str, size_t from, size_t to) {
-    int64_t filesize = fs_size(fp.name.c_str());
+    int64_t filesize = fs::filesize(fp.name.c_str());
     if (filesize < 0) {
         return -1;
     }

@@ -28,7 +28,6 @@
  */
 #include "thread.hpp"
 #include <type_traits>
-#include "brsdk/err/exception.hpp"
 #include "brsdk/log/logging.hpp"
 #include "current_thread.hpp"
 #include "thread_util.hpp"
@@ -67,12 +66,6 @@ struct ThreadData {
         try {
             func_();
             t_threadName = "finished";
-        } catch (const Exception& ex) {
-            t_threadName = "crashed";
-            fprintf(stderr, "exception caught in Thread %s\n", name_.c_str());
-            fprintf(stderr, "reason: %s\n", ex.what());
-            fprintf(stderr, "stack trace: %s\n", ex.stackTrace());
-            abort();
         } catch (const std::exception& ex) {
             t_threadName = "crashed";
             fprintf(stderr, "exception caught in Thread %s\n", name_.c_str());

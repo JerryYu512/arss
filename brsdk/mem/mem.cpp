@@ -34,7 +34,10 @@
 
 namespace brsdk {
 
+///< 分配计数
 static std::atomic_long s_alloc_cnt(0);
+
+///< 释放计数
 static std::atomic_long s_free_cnt(0);
 
 long alloc_cnt(void) {

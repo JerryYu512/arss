@@ -41,11 +41,11 @@ namespace brsdk {
 void *brsdk_malloc(size_t size);
 
 /**
- * @brief
- * @param ptr
- * @param alignment
- * @param size
- * @return
+ * @brief 内存对齐分配
+ * @param ptr 指针 [out]
+ * @param alignment 对齐大小
+ * @param size 需要分配的大小
+ * @return 0-ok，-1-error
  */
 int brsdk_memalign(void **ptr, size_t alignment, size_t size);
 
@@ -73,21 +73,25 @@ long free_cnt(void);
 ///< 内存检查
 void memroy_check(void);
 
+///< 异常退出时检测内存
 static inline void memcheck_register(void) { atexit(memroy_check); }
 
-#define BRSDK_ALLOC(ptr, size)                       \
-    do {                                            \
+///< 内存分配
+#define BRSDK_ALLOC(ptr, size)                        \
+    do {                                              \
         *(void **)&(ptr) = brsdk::brsdk_zalloc(size); \
     } while (0)
 
+///< 分配指针类型的内存大小
 #define BRSDK_ALLOC_SIZEOF(ptr) BRSDK_ALLOC(ptr, sizeof(*(ptr)))
 
-#define BRSDK_FREE(ptr)            \
-    do {                          \
-        if (ptr) {                \
+///< 释放
+#define BRSDK_FREE(ptr)             \
+    do {                            \
+        if (ptr) {                  \
             brsdk::brsdk_free(ptr); \
-            ptr = NULL;           \
-        }                         \
+            ptr = NULL;             \
+        }                           \
     } while (0)
 
 }  // namespace brsdk

@@ -29,6 +29,7 @@
 #include "crc32.hpp"
 
 namespace brsdk {
+namespace crypto {
 
 static unsigned int crc32table[256] = {
 	0x00000000, 0xB71DC104, 0x6E3B8209, 0xD926430D, 0xDC760413, 0x6B6BC517,
@@ -185,4 +186,5 @@ unsigned int crc32(unsigned int crc, const unsigned char *buffer, unsigned int s
 	return crc ;  
 }
 
+} // namespace crypto
 } // namespace brsdk

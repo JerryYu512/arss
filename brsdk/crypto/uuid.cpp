@@ -35,6 +35,7 @@
 #include <unistd.h> // access
 
 namespace brsdk {
+namespace crypto {
 
 // https://en.wikipedia.org/wiki/Universally_unique_identifier
 struct uuid_t
@@ -140,4 +141,5 @@ void uuid_generate(char s[37])
 	}
 }
 
+} // namespace crypto
 } // namespace brsdk

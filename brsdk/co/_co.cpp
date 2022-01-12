@@ -82,7 +82,19 @@ struct schedule_s {
     struct list_head cos;              ///< 协程链表
 };
 
-static void infunc(uint32_t low32, uint32_t hi32);
+/**
+ * @brief 入口函数
+ * 
+ * @param low32 指针低32位
+ * @param hi32 指针高32位，主要为了作32/64位兼容
+ */
+static void _infunc(uint32_t low32, uint32_t hi32);
+
+/**
+ * @brief 删除当前协程任务
+ * 
+ * @param sch 协程调度器
+ */
 static void _del_co(co_schedule_t *sch);
 
 co_schedule_t *co_creat(const co_schedule_conf_t *conf, co_entry_t entry, void *data) {
@@ -240,7 +252,7 @@ co_t *co_new(co_schedule_t *sch, co_cb_t cb, size_t stack, co_close_cb_t close_c
     return new_co;
 }
 
-static void infunc(uint32_t low32, uint32_t hi32) {
+static void _infunc(uint32_t low32, uint32_t hi32) {
     uintptr_t ptr = (uintptr_t)low32 | ((uintptr_t)hi32 << 32);
     co_schedule_t *sch = (co_schedule_t*)ptr;
     co_t *co = list_entry(sch->cur, co_t, node);
@@ -280,7 +292,7 @@ void co_resume(co_schedule_t *sch, co_t *co) {
             sch->cur = &co->node;
             co->st = CO_ST_RUNNING;
             ptr = (uintptr_t)sch;
-            makecontext(&co->ctx, (void(*)(void))infunc, 2, (uint32_t)ptr, (uint32_t)(ptr >> 32));
+            makecontext(&co->ctx, (void(*)(void))_infunc, 2, (uint32_t)ptr, (uint32_t)(ptr >> 32));
             swapcontext(&sch->main, &co->ctx);
             _del_co(sch);
 

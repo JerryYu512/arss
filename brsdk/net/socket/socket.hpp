@@ -126,6 +126,9 @@ public:
 	ssize_t readv(const struct iovec* iov, int iovcnt);
 };
 
+class TcpServerSocket;
+class TcpClientSocket;
+
 /**
  * @brief udp
  * 

@@ -32,21 +32,49 @@
 #include <stdint.h>
 
 namespace brsdk {
+namespace crypto {
 
-// md5
+/**
+ * @brief md5数据
+ * 
+ */
 typedef struct {
     uint64_t bytes;
     uint32_t a, b, c, d;
     uint8_t buffer[64];
 } md5_t;
 
-/// md5初始化
+/**
+ * @brief md5初始化句柄
+ * 
+ * @param ctx 
+ */
 void md5_init(md5_t *ctx);
-/// 更新
+
+/**
+ * @brief 添加要计算的数据
+ * 
+ * @param ctx 句柄
+ * @param data 数据
+ * @param size 数据长度
+ */
 void md5_update(md5_t *ctx, const void *data, size_t size);
-/// 结果
+
+/**
+ * @brief 计算md5结果
+ * 
+ * @param result 结果存放值
+ * @param ctx 句柄
+ */
 void md5_final(uint8_t result[16], md5_t *ctx);
-/// md5摘要
+
+/**
+ * @brief 直接计算摘要
+ * 
+ * @param data 数据
+ * @param size 数据长度
+ * @param result[out] 结果
+ */
 static inline void md5_gen(const void *data, size_t size, uint8_t result[16]) {
     md5_t md5;
     md5_init(&md5);
@@ -54,5 +82,34 @@ static inline void md5_gen(const void *data, size_t size, uint8_t result[16]) {
     md5_final(result, &md5);
 }
 
+/**
+ * @brief md5 16进制字符串
+ * 
+ * @param data 数据
+ * @param size 数据长度
+ * @param str[out] 结果
+ */
+static inline void md5_hex(const void *data, size_t size, char str[32]) {
+    static const char HEX_CHARACTERS[] = "0123456789abcdef";
+    uint8_t result[16] = {0};
+
+    md5_gen(data, size, result);
+
+    // for each byte in the hash array
+    for (int i = 0; i < 16; i++) {
+        // get the value of the first and second 4 bits of the byte
+        uint8_t first_four_bits_value = result[i] >> 4;
+        uint8_t second_four_bits_value = result[i] & 0x0f;
+
+        // set the corresponding char for the first and second half of the byte
+        str[2 * i] = HEX_CHARACTERS[first_four_bits_value];
+        str[2 * i + 1] = HEX_CHARACTERS[second_four_bits_value];
+    }
+
+    // add null terminating character
+    str[32] = '\0';
+}
+
+} // namespace crypto
 } // namespace brsdk
  

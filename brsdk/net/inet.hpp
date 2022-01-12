@@ -36,6 +36,10 @@ namespace brsdk {
 
 namespace net {
 
+/**
+ * @brief 网卡信息
+ * 
+ */
 typedef struct ifconfig_s {
     char name[128];
     char ip[16];
@@ -61,10 +65,13 @@ int ifconfig(std::vector<ifconfig_t>& ifcs);
 
 /*网络地址*/
 unsigned int submask_networkip(unsigned int ip, unsigned int mask);
+
 /*可用的第一个ip地址*/
 unsigned int submask_firstip(unsigned int ip, unsigned int mask);
+
 /*可用的最后一个ip地址*/
 unsigned int submask_lastip(unsigned int ip, unsigned int mask);
+
 /*广播地址*/
 unsigned int submask_broadcastip(unsigned int ip, unsigned int mask);
 

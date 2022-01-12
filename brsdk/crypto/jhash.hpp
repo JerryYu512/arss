@@ -53,6 +53,7 @@
 #include <stdint.h>
 
 namespace brsdk {
+namespace crypto {
 
 /* Best hash sizes are of power of two */
 #define jhash_size(n)   ((uint32_t)1<<(n))
@@ -202,5 +203,6 @@ static inline uint32_t jhash_1word(uint32_t a, uint32_t initval)
 	return __jhash_nwords(a, 0, 0, initval + JHASH_INITVAL + (1 << 2));
 }
 
+} // namespace crypto
 } // namespace brsdk
 

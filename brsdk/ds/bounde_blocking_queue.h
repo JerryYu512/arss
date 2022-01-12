@@ -35,12 +35,19 @@ namespace brsdk {
 
 namespace ds {
 
+/**
+ * @brief 固定长度的阻塞队列
+ * 
+ * @tparam T 队列类型
+ * @tparam ssize 队列最大容量
+ */
 template <typename T, size_t ssize=512>
 class BoundedBlockingQueue : noncopyable {
 public:
     explicit BoundedBlockingQueue()
         : mutex_(), notEmpty_(mutex_), notFull_(mutex_) {}
 
+    // 插入队列
     void put(T& x) {
         MutexLockGuard lock(mutex_);
         while (queue_.full()) {
@@ -51,6 +58,7 @@ public:
         notEmpty_.notify();
     }
 
+    // 插入队列
     void put(T&& x) {
         MutexLockGuard lock(mutex_);
         while (queue_.full()) {
@@ -61,6 +69,7 @@ public:
         notEmpty_.notify();
     }
 
+    // 出队
     T take() {
         MutexLockGuard lock(mutex_);
         while (queue_.empty()) {
@@ -73,31 +82,35 @@ public:
         return front;
     }
 
+    // 是否为空
     bool empty() const {
         MutexLockGuard lock(mutex_);
         return queue_.empty();
     }
 
+    // 是否满
     bool full() const {
         MutexLockGuard lock(mutex_);
         return queue_.full();
     }
 
+    // 当前大小
     size_t size() const {
         MutexLockGuard lock(mutex_);
         return queue_.size();
     }
 
+    // 容量
     size_t capacity() const {
         MutexLockGuard lock(mutex_);
         return queue_.max_size();
     }
 
 private:
-    mutable MutexLock mutex_;
-    Condition notEmpty_ GUARDED_BY(mutex_);
-    Condition notFull_ GUARDED_BY(mutex_);
-    jm::circular_buffer<T, ssize> queue_ GUARDED_BY(mutex_);
+    mutable MutexLock mutex_;               ///< 锁
+    Condition notEmpty_ GUARDED_BY(mutex_); ///< 不为空标记
+    Condition notFull_ GUARDED_BY(mutex_);  ///< 不满标记
+    jm::circular_buffer<T, ssize> queue_ GUARDED_BY(mutex_);    ///< 队列
 };
 
 }  // namespace ds

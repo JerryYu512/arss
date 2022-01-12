@@ -52,6 +52,7 @@ A million repetitions of "a"
 #include "brsdk/defs/defs.hpp"
 
 namespace brsdk {
+namespace crypto {
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
@@ -87,9 +88,11 @@ namespace brsdk {
     z += (w ^ x ^ y) + blk(i) + 0xCA62C1D6 + rol(v, 5); \
     w = rol(w, 30);
 
+static void SHA1Transform(uint32_t state[5], const unsigned char buffer[64]);
+
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-void SHA1Transform(uint32_t state[5], const unsigned char buffer[64]) {
+static void SHA1Transform(uint32_t state[5], const unsigned char buffer[64]) {
     uint32_t a, b, c, d, e;
 
     typedef union {
@@ -302,20 +305,13 @@ void SHA1(char *hash_out, const char *str, int len) {
     hash_out[20] = '\0';
 }
 
-void sha1_gen(unsigned char *input, uint32_t inputlen, unsigned char digest[20]) {
-    SHA1_CTX ctx;
-    SHA1Init(&ctx);
-    SHA1Update(&ctx, input, inputlen);
-    SHA1Final(digest, &ctx);
-}
-
 static inline char i2hex(unsigned char i) { return i < 10 ? i + '0' : i - 10 + 'a'; }
 
 void sha1_hex(unsigned char *input, uint32_t inputlen, char *output, uint32_t outputlen) {
     int i;
     unsigned char digest[20];
     if (outputlen < 40) return;
-    sha1_gen(input, inputlen, digest);
+    SHA1((char*)digest, (const char*)input, inputlen);
     for (i = 0; i < 20; ++i) {
         *output++ = i2hex(digest[i] >> 4);
         *output++ = i2hex(digest[i] & 0x0F);
@@ -324,3 +320,4 @@ void sha1_hex(unsigned char *input, uint32_t inputlen, char *output, uint32_t ou
 }
 
 }  // namespace brsdk
+}  // namespace crypto

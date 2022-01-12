@@ -79,24 +79,24 @@ static struct {
     {"TMPFS   ", FS_TMPFS   },
 };
 
-bool fs_exists(const char* path) {
+bool exists(const char* path) {
     struct stat attr;
     return ::lstat(path, &attr) == 0;
 }
 
-bool fs_isdir(const char* path) {
+bool isdir(const char* path) {
     struct stat attr;
     if (::lstat(path, &attr) != 0) return false;
     return S_ISDIR(attr.st_mode);
 }
 
-int64_t fs_mtime(const char* path) {
+int64_t file_mtime(const char* path) {
     struct stat attr;
     if (::lstat(path, &attr) != 0) return -1;
     return attr.st_mtime;
 }
 
-int64_t fs_size(const char* path) {
+int64_t filesize(const char* path) {
     struct stat attr;
     if (::lstat(path, &attr) != 0) return -1;
     return attr.st_size;
@@ -127,7 +127,7 @@ int fs_systat(const char *path, struct file_systat *fi) {
     return 0;
 }
 
-bool fs_info(const char *path, struct file_info *info) {
+bool file_info(const char *path, struct file_info *info) {
     struct stat st;
     if (-1 == stat(path, &st)) {
         return false;
@@ -163,7 +163,7 @@ bool fs_info(const char *path, struct file_info *info) {
     return true;
 }
 
-bool fs_create(const char* path) {
+bool create_file(const char* path) {
     FILE* fp = fopen(path, "w+");
     if (!fp) {
         return false;
@@ -172,7 +172,7 @@ bool fs_create(const char* path) {
     return true;
 }
 
-int64_t fs_write_to(const char* path, const void* data, size_t len, off_t offset) {
+int64_t write_to(const char* path, const void* data, size_t len, off_t offset) {
     FILE* fp = fopen(path, "a+");
     if (!fp) {
         return errno;
@@ -186,7 +186,7 @@ int64_t fs_write_to(const char* path, const void* data, size_t len, off_t offset
     return ret;
 }
 
-int64_t fs_read_from(const char *path, void *data, size_t len, off_t offset) {
+int64_t read_from(const char *path, void *data, size_t len, off_t offset) {
     FILE *fp = fopen(path, "r");
     if (!fp) {
         return errno;
@@ -201,11 +201,11 @@ int64_t fs_read_from(const char *path, void *data, size_t len, off_t offset) {
 
 // rf = false  ->  rm or rmdir
 // rf = true   ->  rm -rf
-bool fs_remove(const char* path, bool rf) {
-    if (!fs_exists(path)) return true;
+bool remove_file(const char* path, bool rf) {
+    if (!exists(path)) return true;
 
     if (!rf) {
-        if (fs_isdir(path)) return ::rmdir(path) == 0;
+        if (isdir(path)) return ::rmdir(path) == 0;
         return ::remove(path) == 0;
     } else {
         std::string cmd("rm -rf \"");
@@ -216,9 +216,9 @@ bool fs_remove(const char* path, bool rf) {
     }
 }
 
-bool fs_rename(const char* from, const char* to) { return ::rename(from, to) == 0; }
+bool rename_file(const char* from, const char* to) { return ::rename(from, to) == 0; }
 
-bool fs_symlink(const char* dst, const char* lnk) {
+bool symlink(const char* dst, const char* lnk) {
     remove(lnk);
     return ::symlink(dst, lnk) == 0;
 }
@@ -308,7 +308,7 @@ static int dfs_dir_size(const char* path, uint64_t* size) {
                 return ret;
             }
         } else if (ent->d_type == DT_REG) {
-            *size += fs::fs_size(full_path);
+            *size += fs::filesize(full_path);
         }
     }
     closedir(pdir);

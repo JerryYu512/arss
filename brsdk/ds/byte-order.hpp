@@ -57,12 +57,12 @@ namespace ds {
 //---------------------------------------------------------------
 
 // The Internet Protocol defines big-endian as the standard network byte order
-#define nbo_r16 ars::sdk::be_read_uint16
-#define nbo_r32 ars::sdk::be_read_uint32
-#define nbo_r64 ars::sdk::be_read_uint64
-#define nbo_w16 ars::sdk::be_write_uint16
-#define nbo_w32 ars::sdk::be_write_uint32
-#define nbo_w64 ars::sdk::be_write_uint64
+#define nbo_r16 brsdk::ds::be_read_uint16
+#define nbo_r32 brsdk::ds::be_read_uint32
+#define nbo_r64 brsdk::ds::be_read_uint64
+#define nbo_w16 brsdk::ds::be_write_uint16
+#define nbo_w32 brsdk::ds::be_write_uint32
+#define nbo_w64 brsdk::ds::be_write_uint64
 
 static inline void le_read_uint16(const uint8_t* ptr, uint16_t* val) {
     *val = (((uint16_t)ptr[1]) << 8) | ptr[0];

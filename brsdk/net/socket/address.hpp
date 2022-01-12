@@ -61,20 +61,27 @@ public:
 
 	// 取地址族
 	sa_family_t family(void) const { return addr_.sa.sa_family; }
+
 	// 获取ip
 	std::string ip(void) const;
+
 	// 获取ip:port
 	std::string ipport(void) const;
+
+	// 端口号
 	uint16_t port(void) const;
+
 	// unix path
 	std::string path(void) const {
 		return ip();
 	}
 
+	///< 地址引用
 	const sock_addr_t *addr(void) const {
 		return &addr_;
 	}
 
+	///< 通用地址段
 	const struct sockaddr* sockaddr(void) const {
 		return &addr_.sa;
 	}
@@ -104,6 +111,7 @@ public:
 
 	// 获取ipv4网络字节序
 	uint32_t Ipv4NetEndian(void) const;
+
 	// 端口号网络字节序
 	uint16_t PortNetEndian(void) const;
 

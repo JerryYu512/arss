@@ -36,12 +36,14 @@ namespace net {
 typedef void* ssl_ctx_t; ///> SSL_CTX
 typedef void* ssl_t; ///> SSL
 
+///< 状态
 enum {
     SSL_OK = 0,
     SSL_WANT_READ = -2,
     SSL_WANT_WRITE = -3,
 };
 
+///< 初始化参数
 typedef struct {
     const char* crt_file;
     const char* key_file;
@@ -62,16 +64,31 @@ const char* ssl_backend() {
 }
 */
 
+/**
+ * @brief 获取当前加密方式
+ * 
+ * @return const char* openssl, mbedtls, null
+ */
 const char* ssl_backend();
-#define ARS_WITH_SSL (strcmp(ssl_backend(), "null") != 0)
 
+#define BRSDK_WITH_SSL (strcmp(brsdk::net::ssl_backend(), "null") != 0)
+
+///< 初始化
 ssl_ctx_t ssl_ctx_init(ssl_ctx_init_param_t* param);
+
+///< 释放
 void ssl_ctx_cleanup(ssl_ctx_t ssl_ctx);
+
+///< 获取实例，全局的
 ssl_ctx_t ssl_ctx_instance();
 
+///< 创建ssl连接
 ssl_t ssl_new(ssl_ctx_t ssl_ctx, int fd);
+
+///< 释放
 void ssl_free(ssl_t ssl);
 
+///< 网络操作
 int ssl_accept(ssl_t ssl);
 int ssl_connect(ssl_t ssl);
 int ssl_read(ssl_t ssl, void* buf, int len);

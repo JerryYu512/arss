@@ -36,49 +36,54 @@ namespace brsdk {
 
 namespace fs {
 
+///< 路径长度限制
 #define BRSDK_MAX_PATH 256
 
-/// 目录对象
+/**
+ * @brief 目录信息
+ * 
+ */
 typedef struct dir_s {
-    char    name[BRSDK_MAX_PATH];
+    char    name[BRSDK_MAX_PATH];   ///< 文件名
     char    type; // f:file d:dir l:link b:block c:char s:socket p:pipe
     char    reserverd;
-    unsigned short mode;
-    size_t  size;
+    unsigned short mode;            ///< 权限
+    size_t  size;                   ///< 大小
     time_t  atime;
-    time_t  mtime;
-    time_t  ctime;
+    time_t  mtime;                  ///< 修改时间
+    time_t  ctime;                  ///< 创建时间
 } dir_t;
 
 /// 文件类型
 typedef enum file_type {
-    F_NORMAL,
-    F_DIR,
-    F_LINK,
-    F_SOCKET,
-    F_DEVICE,
+    F_NORMAL,           ///< 普通
+    F_DIR,              ///< 目录
+    F_LINK,             ///< 连接文件
+    F_SOCKET,           ///< 套接字文件
+    F_DEVICE,           ///< 设备文件
 } file_type_t;
 
 /// 文件信息
 typedef struct file_info {
-    uint64_t modify_sec;
-    uint64_t access_sec;
-    enum file_type type;
-    char path[BRSDK_MAX_PATH];
-    uint64_t size;
+    uint64_t modify_sec;        ///< 修改时间
+    uint64_t access_sec;        ///< 访问时间
+    enum file_type type;        ///< 类型
+    char path[BRSDK_MAX_PATH];  ///< 名称
+    uint64_t size;              ///< 大小
 } file_info_t;
 
 /// 文件状态
 typedef struct file_systat {
-    uint64_t size_total;
-    uint64_t size_avail;
-    uint64_t size_free;
-    char fs_type_name[32];
+    uint64_t size_total;        ///< 总大小
+    uint64_t size_avail;        ///< 可用大小
+    uint64_t size_free;         ///< 剩余大小
+    char fs_type_name[32];      ///< 类型名称
 } file_systat;
 
+/// 文件操作实现方式
 typedef enum file_backend_type {
-    FILE_BACKEND_IO,
-    FILE_BACKEND_FIO,
+    FILE_BACKEND_IO,    ///< io
+    FILE_BACKEND_FIO,   ///< 标准
     FILE_BACKEND_NUM,
 } file_backend_type;
 
@@ -114,13 +119,17 @@ typedef enum fs_type_supported : int64_t {
     FS_TMPFS    = 0x01021994
 } fs_type_supported_t;
 
+/**
+ * @brief 文件描述
+ * 
+ */
 typedef struct {
     union {
         FILE *fp;
         int fd;
-    } fd;
-    file_backend_type type;
-    std::string name;
+    } fd;                   ///< 句柄
+    file_backend_type type; ///< 实现方式
+    std::string name;       ///< 名称
 } file_dec_t;
 
 } // namespace fs
