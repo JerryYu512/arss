@@ -4,21 +4,21 @@
  * Copyright ? 2022 <Jerry.Yu>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the ¡°Software¡±), to deal in the Software without
+ * and associated documentation files (the "Software"), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * 
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  * 
- * THE SOFTWARE IS PROVIDED ¡°AS IS¡±, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
  * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * @file bloom_filter.hpp
- * @brief Ğ¡¶¥¶Ñ
+ * @brief å¸ƒéš†è¿‡æ»¤å™¨
  * @author Jerry.Yu (jerry.yu512@outlook.com)
  * @version 1.0.0
  * @date 2022-01-12
@@ -35,64 +35,64 @@ namespace brsdk {
 namespace ds {
 
 /**
- * @brief ²¼Â¡¹ıÂËÆ÷hash½Ó¿ÚÀàĞÍ
- * @param key ¼üÖµ
- * @param len keyµÄ³¤¶È
+ * @brief 
+ * @param key 
+ * @param len 
  * @return uint64_t hashÖµ
  */
 typedef uint64_t (*bl_hash_fn_t)(const void *key, size_t len);
 
 /**
- * @brief ²¼Â¡¹ıÂËÆ÷ÀàĞÍ
+ * @brief 
  */
 struct bloom_t;
 
 /**
- * @brief ´´½¨²¼Â¡¹ıÂËÆ÷
- * @param size ×î´óÊı¾İÁ¿£¬±ÈÈçÄã¿ÉÄÜ´æ·Å1Ç§Íò¸öÊı¾İ¾ÍÌîÒ»Ç§Íò
- * @param nfuncs hashº¯Êı¸öÊı£¬¶à¸öÉ¢ÁĞ½Ó¿ÚÄÜ¼ÓÇ¿·ÀÅö×²ÄÜÁ¦£¬µ«ÊÇ»áÔö¼ÓºÄÊ±(ĞèÒª¿¼Á¿Ìá¹©µÄÉ¢ÁĞ½Ó¿ÚÓÅÁ¼¶È) @ref jtu_bi_hash_fn_t È¥¶¨Òå½Ó¿Ú£¬Ìá¹©Á½¸öÄÜÓÃµÄ @ref jtu_bl_sax_hash @ref jtu_bl_sdbm_hash
- * @param ... hashº¯Êı½Ó¿Ú£¬ĞèÒªºÍnfuncsÊıÁ¿Æ¥Åä
- * @return struct bloom_t* ²¼Â¡¹ıÂËÆ÷¾ä±ú£¬·Ç¿ÕÎªÕı³£
+ * @brief 
+ * @param size 
+ * @param nfuncs 
+ * @param ... 
+ * @return struct bloom_t* 
  */
 struct bloom_t *bloom_creat(size_t size, size_t nfuncs, ...);
 
 /**
- * @brief É¾³ı²¼Â¡¹ıÂËÆ÷
- * @param bloom ¾ä±ú
- * @return int Ğ¡ÓÚ0ÎªÒì³££¬0ÎªÕı³£
+ * @brief 
+ * @param bloom 
+ * @return int 
  */
 int bloom_destroy(struct bloom_t **bloom);
 
 /**
- * @brief Ìí¼ÓÒ»¸öÊı¾İ¼ÇÂ¼µ½²¼Â¡¹ıÂËÆ÷
- * @param bloom ¾ä±ú
- * @param key ¼üÖµ
- * @param len ¼üÖµ³¤¶È
- * @return int Ğ¡ÓÚ0ÎªÒì³££¬0ÎªÕı³£
+ * @brief 
+ * @param bloom 
+ * @param key 
+ * @param len 
+ * @return int 
  */
 int bloom_add(struct bloom_t *bloom, const void *key, size_t len);
 
 /**
- * @brief ¼ì²éÊı¾İÊÇ·ñ±»¼ÇÂ¼µ½²¼Â¡¹ıÂËÆ÷
- * @param bloom ¾ä±ú
- * @param key ¼üÖµ
- * @param len ¼üÖµ³¤¶È
- * @return int -1Òì³££¬0Î´¼ÇÂ¼£¬1¼ÇÂ¼
+ * @brief 
+ * @param bloom 
+ * @param key 
+ * @param len 
+ * @return int 
  */
 int bloom_check(struct bloom_t *bloom, const void *key, size_t len);
 
 /**
- * @brief É¢ÁĞ¼ÆËãº¯Êı1
- * @param key ¼üÖµ
- * @param len ¼üÖµ³¤¶È
- * @return uint64_t hashÖµ
+ * @brief 
+ * @param key 
+ * @param len 
+ * @return uint64_t hash
  */
 uint64_t bl_sax_hash(const void *key, size_t len);
 
 /**
- * @brief É¢ÁĞ¼ÆËãº¯Êı2
- * @param key ¼üÖµ
- * @param len ¼üÖµ³¤¶È
+ * @brief 
+ * @param key 
+ * @param len 
  * @return uint64_t hashÖµ
  */
 uint64_t bl_sdbm_hash(const void *key, size_t len);

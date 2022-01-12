@@ -122,64 +122,41 @@ typedef uint64_t berror_t;
 
 /// 成功
 #define BEC_SUCCESS 0
-/// 主类型
-#define BRSDK_ERR_CODE_MAIN_TYPE(code) (((code) >> 12) & 0xf)
-/// 来源子系统错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1 0
-/// 标准协议错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_2 1
-/// 系统内错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_3 2
 
-/// 主类型1-认证错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1_SUB_AUTH 0
-/// 主类型1-网络错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1_SUB_NET 1
-/// 主类型1-数据库错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1_SUB_DB 2
-/// 主类型1-系统错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1_SUB_SYS 3
-/// 主类型1-设备错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_1_SUB_DEV 4
+///< 基本常用错误
 
-/// 主类型3-参数错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_3_SUB_ARG 0
-/// 主类型3-服务错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_3_SUB_SRV 1
-/// 主类型3-资源错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_3_SUB_SRC 2
-/// 主类型3-其他错误
-#define BRSDK_ERR_CODE_MAIN_TYPE_3_SUB_OTH 3
+#define BEC_COMMON_INTERNAL				1			///< 内部错误
+#define BEC_COMMON_INVALID_CALL			2			///< 调用流程错误
+// 非法参数
+#define BEC_COMMON_INVALID_PARAMS
+// 缓冲区大小不足
+#define BEC_COMMON_BUFFER_TOO_SMALL
+// 数据超长
+#define BEC_DATA_LEN_OVER_RANGE
+// 内存异常
+#define BEC_MEMORY_EXPECTION
+// json数据非法
+#define BEC_JSON_INVALID
+// json数据错误
+#define BEC_JSON_FORMAT_ERROR
+// 消息队列满
+#define BEC_MSG_QUEUE_FULL
+// 不支持
+#define BEC_NOT_SUPPORT
 
-/**
- * @brief 通用错误
- * 
- */
-typedef enum {
-    E_BRSDK_SUCCESS      		= BRSDK_ERR_CODE_SUCCESS,		///< 成功
-    E_BRSDK_INTERNAL     		= 1,							///< 内部错误 
-	E_BRSDK_INVALID_CALL			= 2,							///< 调用流程错误
-	E_BRSDK_PARAMS_INVALID		= 3,							///< 参数非法
-	E_BRSDK_BUFFER_TOOL_SAMLL	= 4,							///< 缓冲区大小不足
-	E_BRSDK_DATA_LEN_RANGE		= 5,							///< 数据大小超过范围
-	E_BRSDK_MEMORY				= 6,							///< 内存异常
-	E_BRSDK_JSON_INVALID			= 7,							///< 非法的json数据
-	E_BRSDK_JSON_FORMAT			= 8,							///< json数据有误
-	E_BRSDK_QUEUE_FULL			= 9,							///< 消息队列已满
-	E_BRSDK_NOT_SUPPORT			= 10,							///< 不支持
-} ERR_CODE_COMMON_NO;
+///< 网络错误
 
-/**
- * @brief 网络错误
- * 
- */
-typedef enum {
-	E_BRSDK_NET_CREATE			= 1,							///< 创建socket失败
-	E_BRSDK_NET_CONNECT			= 2,							///< 网络连接失败
-	E_BRSDK_NET_DISCONNECTED		= 3,							///< 网络断开连接
-	E_BRSDK_TRANSMIT				= 4,							///< 数传传输失败
-	E_BRSDK_TRANS_TIMEOUT		= 5,							///< 数传传输超时
-	E_BRSDK_NET_DNS				= 6,							///< 域名解析失败
-} ERR_CODE_NET_NO;
+// 创建socket失败
+#define BEC_NET_CREATE
+// 连接失败
+#define BEC_NET_CONNECT
+// 断开连接
+#define BEC_NET_DISCONNECTED
+// 数据传输失败
+#define BEC_NET_TRANSMIT
+// 传输超时
+#define BEC_NET_TRANS_TIMEOUT
+// 域名解析失败
+#define BEC_NET_DNS_FAILED
 
 } // namespace brsdk
