@@ -28,24 +28,28 @@
  */
 #pragma once
 #include <inttypes.h>
+#include "net_err.hpp"
 
 namespace brsdk {
 
 ///< 错误码数据类型
 typedef uint64_t berror_t;
 
+///< 错误码
+extern __thread berror_t berrno;
+
 ///< 错误码宏前缀，BEC: BluseIO Error Code
 #define BEC_XXX
+
+/// 成功
+#define BEC_SUCCESS 0ull
 
 /**
  * |-------|----------|--------|----------|----------|-----------| 
  * | 4bit  |  4bit    |  4bit  |   4bit   |  24bit   |   24bit   |
- * | 标识码 |  类别码   | 异常码  |  保留码   |  编号数   |  错误码    |
+ * | 标识码 |  类别码  | 异常码  |  保留码  |  编号数   |  错误码    |
  * |-------|----------|--------|----------|----------|-----------| 
  */
-
-// 组件|常规|失败|保留|1|用户登录|网络错误|拒绝连接|
-// 0001|0000|0011|0000|000000000000000000000001|00000001|0001|0000|000000001|
 
 ////////////////////////////////////////////////////////
 /// 标识码，4bit，标识的是错误的来源
@@ -55,22 +59,30 @@ typedef uint64_t berror_t;
  * B类：0x1，标识组件，组件库内部和开放接口使用的错误码
  * C类：0x2，标识应用程序，应用程序内部使用的错误码
  */
-#define BEC_IDENTIFICATION_CODE
+// 获取标识码
+#define BEC_IDENTIFICATION_CODE(code) (((code) >> 60) & 0x0f)
+// 填充标识码
+#define BEC_ADD_IDENTIFICATION_CODE(identi, code) ((((identi) & 0x0f) << 60) | ((code) & ~(0xf << 60)))
 
 // openAPI
-#define BEC_IDENTI_OPENAPI		0
+#define BEC_IDENTI_OPENAPI		0ull
 // 组件
-#define BEC_IDENTI_COMPONENT	1
+#define BEC_IDENTI_COMPONENT	1ull
 // 应用程序
-#define BEC_IDENTI_APPLICATION	2
+#define BEC_IDENTI_APPLICATION	2ull
 
 ////////////////////////////////////////////////////////
 /// 类别码，4bit，区分应用类型
 ///////////////////////////////////////////////////////
+// 获取类别码
+#define BEC_CLASS_CODE(code) (((code) >> 56) & 0x0f)
+// 填充标识码
+#define BEC_ADD_CLASS_CODE(class, code) ((((class) & 0x0f) << 56) | ((code) & ~(0xf << 56)))
+
 /**
  * 0x0，常规应用
  */
-#define BEC_
+#define BEC_COMMON_APPLICATION 0ull
 
 ////////////////////////////////////////////////////////
 /// 异常码，4bit，区分异常或者失败
@@ -84,15 +96,29 @@ typedef uint64_t berror_t;
  * 次高位为0标识非严重错误，1标识严重错误
  * 最高位保留
  */
-#define BRSDK_ERR_CODE_CATEGORY_CODE(code) (((code) >> 16) & 0xf)
+// 获取异常码
+#define BEC_EXCEPTION_CODE(code) (((code) >> 52) & 0x0f)
+// 添加异常码
+#define BEC_ADD_EXCEPTION_CODE(exception, code) ((((exception) & 0x0f) << 52) | ((code) & ~(0xf << 52)))
 
-///< 异常/失败码
-#define BRSDK_ERR_CODE_ABNORMAL_FAILED_CODE(code) ((code) & 0xffff)
+// 获取严重等级
+#define BEC_SEVERE_LEVEL(exception) (((exception) >> 2) & 0x1)
+// 添加严重等级
+#define BEC_ADD_SEVERE_LEVEL(lv, exception) ((((lv) & 0x1) << 2) | ((exception) & ~(0x1 << 2)))
+
+///< 异常
+#define BEC_ABNORMAL_CODE 	1ull
+///< 失败
+#define BEC_FAILED_CODE 	3ull
 
 ////////////////////////////////////////////////////////
 /// 编号数，24bit，每组openAPI/组件/应用程序的唯一编号
 /// 全0保留
 ///////////////////////////////////////////////////////
+// 获取编号
+#define BEC_ID_CODE(code) (((code) >> 24) & 0x0ffffff)
+// 添加编号
+#define BEC_ADD_ID_CODE(id, code) ((((id) & 0x0ffffff) << 24) | ((code) & ~(0xffffff << 24)))
 
 ////////////////////////////////////////////////////////
 /// 错误码，24bit，错误/异常的具体信息
@@ -103,60 +129,84 @@ typedef uint64_t berror_t;
  * |  领域码 |  主类型  |  次类型  |  具体码 |
  * |--------|---------|---------|--------|
  */
+// 获取错误码
+#define BEC_ERROR_CODE(code) ((code) & 0x0ffffff)
+// 设置错误码
+#define BEC_ADD_ERROR_CODE(err, code) ((err) & 0x0ffffff) | ((code) & ~0x0ffffff))
 
 ///< 领域码，标识应用内的功能领域
 ///< 全0保留
 
+// 领域
+#define BEC_DOMAIN_CODE(err) (((err) >> 16) & 0xff)
+// 添加领域
+#define BEC_ADD_DOMAIN_CODE(domain, code) ((((domain) & 0x0ff) << 16) | ((code) & ~(0xff << 16)))
+
 ///< 主类型，标识错误的大类
 // 0:全0保留
 // 1:子系统错误
+#define BEC_MAIN_SUBSYS		1ull
 // 2:系统错误
+#define BEC_MAIN_SYS		2ull
 // 3:协议错误
+#define BEC_MAIN_PROTOCOL	3ull
 // 4:认证错误
+#define BEC_MAIN_AUTH		4ull
 // 5:网络错误
+#define BEC_MAIN_NET		5ull
 // 6:设备异常
+#define BEC_MAIN_DEVICE		6ull
 // 7:参数错误
+#define BEC_MAIN_PARAM		7ull
 // 8:服务错误
+#define BEC_MAIN_SERVICE	8ull
 // 9:资源错误
+#define BEC_MAIN_SOURCE		9ull
 // 15:其他错误
+#define BEC_MAIN_OTHER		15ull
 
-/// 成功
-#define BEC_SUCCESS 0
+// 主类型
+#define BEC_MAIN_CODE(err) (((err) >> 12) & 0xf)
+// 添加主类型
+#define BEC_ADD_MAIN_CODE(main, code) ((((main) & 0x0f) << 12) | ((code) & ~(0xf << 12)))
+
+// 次类型
+#define BEC_SUB_CODE(err) (((err) >> 8) & 0xf)
+// 添加次类型
+#define BEC_ADD_SUB_CODE(sub, code) ((((sub) & 0x0f) << 8) | ((code) & ~(0xf << 8)))
+
+// !!!linux errno，此值时，错误为linux的errno值
+// 其他任何子类型都只能从2开始
+#define BEC_SUB_LINUX_ERR_CODE		1
+
+// 错误
+#define BEC_ERROR_CODE(err) ((err) & 0xff)
+// 添加错误
+#define BEC_ADD_ERROR_CODE(item, code) (((item) & 0x0ff) | ((code) & ~0xff))
 
 ///< 基本常用错误
-
-#define BEC_COMMON_INTERNAL				1			///< 内部错误
-#define BEC_COMMON_INVALID_CALL			2			///< 调用流程错误
-// 非法参数
-#define BEC_COMMON_INVALID_PARAMS
-// 缓冲区大小不足
-#define BEC_COMMON_BUFFER_TOO_SMALL
-// 数据超长
-#define BEC_DATA_LEN_OVER_RANGE
-// 内存异常
-#define BEC_MEMORY_EXPECTION
-// json数据非法
-#define BEC_JSON_INVALID
-// json数据错误
-#define BEC_JSON_FORMAT_ERROR
-// 消息队列满
-#define BEC_MSG_QUEUE_FULL
+// 全零保留
 // 不支持
-#define BEC_NOT_SUPPORT
+#define BEC_COMMON_NOT_SUPPORT			0xff
 
-///< 网络错误
+// 添加linux的errno
+uint64_t bec_add_linux_errno(uint64_t code, int no);
+uint64_t bec_add_linux_errno(uint64_t code);
 
-// 创建socket失败
-#define BEC_NET_CREATE
-// 连接失败
-#define BEC_NET_CONNECT
-// 断开连接
-#define BEC_NET_DISCONNECTED
-// 数据传输失败
-#define BEC_NET_TRANSMIT
-// 传输超时
-#define BEC_NET_TRANS_TIMEOUT
-// 域名解析失败
-#define BEC_NET_DNS_FAILED
+/**
+ * @brief 获取标识码字符串
+ * 
+ * @param code 
+ * @return const char* 
+ */
+const char* bec_identi_str(berror_t identi);
+// 获取类别码字符串
+const char* bec_class_str(berror_t cls);
+// 获取异常码字符串
+const char* bec_exception_str(berror_t exception);
+// 获取严重等级字符串
+const char* bec_severe_str(berror_t exception);
+// 领域名
+const char* bec_domain_str(berror_t exception);
 
 } // namespace brsdk
