@@ -33,7 +33,7 @@
 #include "brsdk/mix/types.hpp"
 #include "brsdk/str/string_piece.hpp"
 #include "brsdk/net/socket/address.hpp"
-#include "brsdk/net/socket/socket.hpp"
+#include "tcp_sock.hpp"
 #include "event_typedef.hpp"
 
 #include <netinet/tcp.h>

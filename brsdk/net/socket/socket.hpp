@@ -79,57 +79,6 @@ protected:
 };
 
 /**
- * @brief tcp套接字
- * 
- */
-class TcpSocket : public Socket {
-public:
-	explicit TcpSocket(int sockfd) : Socket(sockfd) { }
-	virtual ~TcpSocket();
-public:
-	// tcp监听
-	int listen(void);
-	int accept(Address& peeraddr);
-	// 关闭写端
-	void ShutdownWrite(void);
-	// 立即关闭
-	virtual void close(void) override;
-	// 获取tcp信息
-	bool GetTcpInfo(struct tcp_info* info) const;
-	bool GetTcpInfoString(char* buf, int len) const;
-	bool GetTcpInfoString(std::string& info) const;
-
-	// 设置阻塞
-	void SetNonblock(bool on);
-	// 设置非延时发送
-	void SetNodelay(bool on);
-	// 设置地址重用
-	void SetReuseaddr(bool on);
-	// 设置端口重用
-	void SetReusepot(bool on);
-	// 设置心跳
-	void SetKeepalive(bool on);
-
-	// 除非发送异常，否则会直到数据发送完才返回
-	// ssize_t writen(const void* data, size_t len);
-	// ssize_t readen(void* data, size_t len);
-
-	// send
-	ssize_t send(const void* data, size_t len, int flags);
-	// recv
-	ssize_t recv(void* data, size_t len, int flags);
-	// write/v
-	ssize_t write(const void* data, size_t len);
-	ssize_t writev(const struct iovec* iov, int iovcnt);
-	// read/v
-	ssize_t read(void* data, size_t len);
-	ssize_t readv(const struct iovec* iov, int iovcnt);
-};
-
-class TcpServerSocket;
-class TcpClientSocket;
-
-/**
  * @brief udp
  * 
  */
