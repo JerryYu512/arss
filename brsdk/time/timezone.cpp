@@ -317,28 +317,28 @@ const char* TimeZone::timezoneName(void) {
 }
 
 time_t TimeZone::timezoneOffset(void) {
-    struct timeval tv;
-    struct timezone tz;
+    // struct timeval tv;
+    // struct timezone tz;
 
-    ::gettimeofday(&tv, &tz);
+    // ::gettimeofday(&tv, &tz);
 
-    return tz.tz_minuteswest * 60;
+    // return tz.tz_minuteswest * 60;
 
-    // time_t t1, t2;
-    // struct tm tm_local, tm_utc;
+    time_t t1, t2;
+    struct tm tm_local, tm_utc;
 
-    // time(&t1);
-    // t2 = t1;
+    time(&t1);
+    t2 = t1;
 
-    // // 获取本地时间
-    // localtime_r(&t1, &tm_local);
-    // t1 = mktime(&tm_local);
+    // 获取本地时间
+    localtime_r(&t1, &tm_local);
+    t1 = mktime(&tm_local);
 
-    // // 获取格林威治时间
-    // gmtime_r(&t2, &tm_utc);
-    // t2 = mktime(&tm_utc);
+    // 获取格林威治时间
+    gmtime_r(&t2, &tm_utc);
+    t2 = mktime(&tm_utc);
 
-    // return (t1 - t2) / 3600;
+    return (t1 - t2);
 }
 
 } // namespace brsdk

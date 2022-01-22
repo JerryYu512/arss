@@ -67,7 +67,7 @@ std::string hostname();
 std::string procname();
 
 /// 进程名
-brsdk::str::StringPiece procname(const std::string& stat);
+str::StringPiece procname(const std::string& stat);
 
 /// read /proc/self/status
 std::string procStatus();

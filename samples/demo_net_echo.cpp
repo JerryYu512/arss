@@ -79,48 +79,43 @@ void on_connect(const TcpConnectionPtr& conn) {
 }
 
 void on_msg(const TcpConnectionPtr& conn, NetBuffer* buf, Timestamp time) {
+	static int k = 0;
 	auto msg(buf->retrieve_all_string());
 	LOG_INFO << conn->name() << " echo " << msg.size() << " bytes[" << msg << "], data recieve at " << time.toString().c_str() << "\n";
+
+	if (k < 10) {
+		conn->send("hello world");
+		k++;
+		// std::this_thread::sleep_for(std::chrono::seconds(1));
+	} else {
+		conn->GetLoop()->quit();
+	}
 }
 
-static void echo_client(EventLoop *loop)
+static void echo_client(void)
 {
+	LOG_INFO << thread::tid();
+	EventLoop loop;
 	Address server_addr("127.0.0.1", 8009);
-	TcpClient client(loop, server_addr, "EchoClient");
+	Address local_addr("127.0.0.1", 8010);
+	TcpClient client(&loop, server_addr, local_addr, "EchoClient");
 
 	client.SetConnectionCallback(on_connect);
 	client.SetMessageCallback(on_msg);
 
-	LOG_INFO << "goto connect\n";
 	client.connect();
-	LOG_INFO << "goto connect2\n";
 
-	// Timestamp::sdelay(5);
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-	auto conn = client.connection();
-	int cnt = 0;
+	LOG_INFO << thread::tid();
 
-	while (1) {
-		if (conn->connected()) {
-			LOG_INFO << "goto send";
-			for (int i = 0; i < 10; i++) {
-				if (conn->connected()) {
-					conn->send("hello world");
-					std::this_thread::sleep_for(std::chrono::seconds(1));
-				} else {
-					break;
-				}
-			}
-			break;
-		} else if (cnt > 5) {
-			break;
-		} else {
-			cnt++;
-			Timestamp::sdelay(1);
-		}
+	loop.loop();
+}
+
+void timer_run(void) {
+	static int k = 0;
+	if (k < 20) {
+		k++;
+		LOG_TRACE << "timer run [" << k << "]";
 	}
-
-	conn->ForceClose();
 }
 
 int main(void) {
@@ -128,15 +123,17 @@ int main(void) {
 	Logger::setLogLevel(Logger::TRACE);
 	Logger::setTimeZone(beijing);
 
+	LOG_INFO << thread::tid();
 	EventLoop loop;
 	Address addr(8009);
 	EchoServer server(&loop, addr);
 
 	server.start();
 
-	auto cli = std::bind(echo_client, &loop);
+	auto cli = std::bind(echo_client);
 	thread::Thread cli_t(cli, "echo client");
 	cli_t.start();
+	loop.RunEvery(5, timer_run);
 	loop.loop();
 
 	cli_t.join(nullptr);

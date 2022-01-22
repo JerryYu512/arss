@@ -4,14 +4,14 @@
  * Copyright © 2021 <Jerry.Yu>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the “Software�?), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * 
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  * 
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * THE SOFTWARE IS PROVIDED “AS IS�?, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
  * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
@@ -47,31 +47,31 @@ int main(void) {
 
 	const char *str = "0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-	LOG_DEBUG << "crc16 : " << crc16(str, strlen(str), 0) << "\n";
-	LOG_DEBUG << "crc16 : " << crc16(str, strlen(str)) << "\n";
-	LOG_DEBUG << "crc16 : " << crc16(str) << "\n";
-	LOG_DEBUG << "crc16 : " << crc16(std::string(str)) << "\n";
+	LOG_DEBUG << "crc16 : " << crypto::crc16(str, strlen(str), 0) << "\n";
+	LOG_DEBUG << "crc16 : " << crypto::crc16(str, strlen(str)) << "\n";
+	LOG_DEBUG << "crc16 : " << crypto::crc16(str) << "\n";
+	LOG_DEBUG << "crc16 : " << crypto::crc16(std::string(str)) << "\n";
 
-	crc32_msb_init();
-	crc32_lsb_init();
+	crypto::crc32_msb_init();
+	crypto::crc32_lsb_init();
 
-	LOG_DEBUG << "crc32 : " << crc32(0, (const unsigned char*)str, strlen(str)) << "\n";
-	LOG_DEBUG << "crc32 : " << crc32_msb(0, (const unsigned char*)str, strlen(str)) << "\n";
-	LOG_DEBUG << "crc32 : " << crc32_lsb(0, (const unsigned char*)str, strlen(str)) << "\n";
+	LOG_DEBUG << "crc32 : " << crypto::crc32(0, (const unsigned char*)str, strlen(str)) << "\n";
+	LOG_DEBUG << "crc32 : " << crypto::crc32_msb(0, (const unsigned char*)str, strlen(str)) << "\n";
+	LOG_DEBUG << "crc32 : " << crypto::crc32_lsb(0, (const unsigned char*)str, strlen(str)) << "\n";
 
-	LOG_DEBUG << "jhash : " << jhash(str, strlen(str), 53) << "\n";
+	LOG_DEBUG << "jhash : " << crypto::jhash(str, strlen(str), 53) << "\n";
 
 	uint8_t md5[16] = {0};
-	md5_gen(str, strlen(str), md5);
+	crypto::md5_gen(str, strlen(str), md5);
 	BRSDK_DUMP_BUFFER(md5, sizeof(md5));
 
 	char out[64] = "";
-	sha1_hex((unsigned char*)str, strlen(str), out, 64);
+	crypto::sha1_hex((unsigned char*)str, strlen(str), out, 64);
 
 	LOG_DEBUG << "sha1 : " << out << "\n";
 
 	char uuid[38] = "";
-	uuid_generate(uuid);
+	crypto::uuid_generate(uuid);
 	LOG_DEBUG << "uuid : " << uuid << "\n";
 
 	return 0;

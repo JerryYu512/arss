@@ -114,7 +114,7 @@ std::string flag_set_value(Flag* flag, const std::string& v) {
 
 template<typename T>
 std::string int_to_string(T t) {
-    if ((0 <= t && t <= 8192) || (t < 0 && static_cast<int>(t) >= -8192)) return brsdk::str::to_string(t);
+    if ((0 <= t && t <= 8192) || (t < 0 && static_cast<int>(t) >= -8192)) return std::to_string(t);
 
     const char* u = "kmgtp";
     int i = -1;
@@ -123,7 +123,7 @@ std::string int_to_string(T t) {
         if (++i >= 4) break;
     }
 
-    return i < 0 ? brsdk::str::to_string(t) : brsdk::str::to_string(t) + u[i];
+    return i < 0 ? std::to_string(t) : std::to_string(t) + u[i];
 }
 
 std::string flag_get_value(const Flag* flag) {
@@ -131,7 +131,7 @@ std::string flag_get_value(const Flag* flag) {
       case TYPE_string:
         return *static_cast<std::string*>(flag->addr);
       case TYPE_bool:
-        return brsdk::str::to_string(*static_cast<bool*>(flag->addr));
+        return std::to_string(*static_cast<bool*>(flag->addr));
       case TYPE_int32:
         return int_to_string(*static_cast<int32_t*>(flag->addr));
       case TYPE_uint32:
@@ -141,7 +141,7 @@ std::string flag_get_value(const Flag* flag) {
       case TYPE_uint64:
         return int_to_string(*static_cast<uint64_t*>(flag->addr));
       case TYPE_double:
-        return brsdk::str::to_string(*static_cast<double*>(flag->addr));
+        return std::to_string(*static_cast<double*>(flag->addr));
       default:
         return "unknown flag type";
     }

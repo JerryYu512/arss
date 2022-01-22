@@ -180,9 +180,9 @@ extern __thread berror_t berrno;
 #define BEC_SUB_LINUX_ERR_CODE		1
 
 // 错误
-#define BEC_ERROR_CODE(err) ((err) & 0xff)
+#define BEC_REAL_ERROR_CODE(err) ((err) & 0xff)
 // 添加错误
-#define BEC_ADD_ERROR_CODE(item, code) (((item) & 0x0ff) | ((code) & ~0xff))
+#define BEC_ADD_REAL_ERROR_CODE(item, code) (((item) & 0x0ff) | ((code) & ~0xff))
 
 ///< 基本常用错误
 // 全零保留

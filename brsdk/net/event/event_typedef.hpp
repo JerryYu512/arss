@@ -130,10 +130,13 @@ using ReadEventCallback = std::function<void(Timestamp)>;
 // 新连接回调
 using AcceptNewConnectionCallback = std::function<void(int sockfd, const Address& addr)>;
 using ConnectorNewConnectionCallback = std::function<void(int sockfd)>;
+using ConnectorFailedConnCallback = std::function<void(const Address& peer_addr, const Address& local_addr)>;
 // 定时器超时
 using TimerCallback = std::function<void()>;
 // tcp连接成功
 using TcpConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
+// tcp连接失败
+using TcpConnectionFailedCallback = std::function<void(const Address& peer_addr, const Address& local_addr)>;
 // tcp关闭
 using TcpCloseCallbak = std::function<void(const TcpConnectionPtr&)>;
 // tcp消息发送成功

@@ -43,19 +43,21 @@ using ConnectorPtr = std::shared_ptr<Connector>;
 
 void _RemoveConnection(EventLoop* loop, const TcpConnectionPtr& conn)
 {
-  loop->QueueInLoop(std::bind(&TcpConnection::ConnectDestroyed, conn));
+	LOG_TRACE << "To remove connection.";
+	loop->QueueInLoop(std::bind(&TcpConnection::ConnectDestroyed, conn));
 }
 
 void _RemoveConnector(const ConnectorPtr& connector)
 {
-  //connector->
+	LOG_TRACE << "To remove connector.";
+    // connector->
 }
 
 }
 
-TcpClient::TcpClient(EventLoop* loop, const Address& serverAddr, const std::string& nameArgs)
+TcpClient::TcpClient(EventLoop* loop, const Address& serverAddr, const Address& localAddr, const std::string& nameArgs)
 	: loop_(loop),
-	  connector_(new Connector(loop, serverAddr)),
+	  connector_(new Connector(loop, serverAddr, localAddr)),
 	  name_(nameArgs),
 	  connectionCallback_(TcpConnection::DefaultConnectionCallback),
 	  messageCallback_(TcpConnection::DefaultMessageCallback),
@@ -63,9 +65,13 @@ TcpClient::TcpClient(EventLoop* loop, const Address& serverAddr, const std::stri
 	  connect_(true),
 	  nextConnId_(1) {
 	connector_->SetNewConnectionCallback(std::bind(&TcpClient::NewConnection, this, _1));
+	connector_->SetConnectionFailedCallback(std::bind(&TcpClient::FailedConnection, this, _1, _2));
 	LOG_INFO << "TcpClient::TcpClient [" << name_
 			 << "] - connector " << get_pointer(connector_);
 }
+
+TcpClient::TcpClient(EventLoop* loop, const Address& serverAddr, const std::string& nameArgs) : TcpClient(loop, serverAddr, Address(0), nameArgs) {}
+
 TcpClient::~TcpClient() {
 	LOG_INFO << "TcpClient::~TcpClient [" << name_
 			 << "] - connector " << get_pointer(connector_);
@@ -79,8 +85,9 @@ TcpClient::~TcpClient() {
 
 	if (conn) {
 		TcpCloseCallbak cb = std::bind(&_RemoveConnection, loop_, _1);
-		loop_->RunInLoop(std::bind(&TcpConnection::SetCloseCallback, conn, cb));
+		conn->SetCloseCallback(cb);
 		if (unique) {
+			LOG_TRACE << "Connection unique, force close.";
 			conn->ForceClose();
 		}
 	} else {
@@ -145,6 +152,13 @@ void TcpClient::NewConnection(int sockfd) {
 	}
 	LOG_INFO << "create connection : " << connection_.get();
 	conn->ConnectEstablished();
+}
+
+void TcpClient::FailedConnection(const Address& peer, const Address& local) {
+	LOG_INFO << "[" << local.ipport() << "] connect to [" << peer.ipport() << "] failed!";
+	if (connectionFailedCallback_) {
+		connectionFailedCallback_(peer, local);
+	}
 }
 
 // 移除连接，在loop中执行

@@ -48,7 +48,8 @@ public:
 	 * @param loopback 用于环回
 	 * @param ipv6 支持ipv6
 	 */
-	explicit Address(uint16_t port = 0, bool loopback = false, bool ipv6 = false);
+	Address() : Address(0) { }
+	explicit Address(uint16_t port, bool loopback = false, bool ipv6 = false);
 	// 适用于ipv4/ipv6
 	Address(const std::string &ip, uint16_t port, bool ipv6 = false);
 	// 适用于unix

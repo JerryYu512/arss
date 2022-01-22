@@ -95,6 +95,8 @@ EventLoop::~EventLoop() {
 	wakeup_channel_->DisableAll();
 	wakeup_channel_->remove();
 	::close(wakeup_fd_);
+	// 处理待处理的回调接口
+	DoPendingFunctors();
 	t_loop_in_this_thread = nullptr;
 }
 
@@ -144,7 +146,7 @@ void EventLoop::quit(void) {
 }
 
 void EventLoop::RunInLoop(EventFunctor cb) {
-	if (IsInLoopThread()) {
+	if (IsInLoopThread() || quit_) {
 		// loop线程内的直接调用，因为已经在loop里了
 		cb();
 	} else {
@@ -154,6 +156,11 @@ void EventLoop::RunInLoop(EventFunctor cb) {
 }
 
 void EventLoop::QueueInLoop(EventFunctor cb) {
+	if (quit_)
+	{
+		cb();
+		return;
+	}
 	{
 		MutexLockGuard lock(mutex_);
 		pending_functors_.push_back(std::move(cb));

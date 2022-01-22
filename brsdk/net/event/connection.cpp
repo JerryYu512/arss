@@ -186,7 +186,7 @@ void TcpConnection::ShutDownInLoop(void) {
 void TcpConnection::ForceClose(void) {
 	if (state_ == kConnected || state_ == kDisconnecting) {
 		set_state(kDisconnecting);
-		loop_->RunInLoop(std::bind(&TcpConnection::ForceCloseInLoop, this));
+		loop_->QueueInLoop(std::bind(&TcpConnection::ForceCloseInLoop, shared_from_this()));
 	}
 }
 
@@ -254,6 +254,7 @@ void TcpConnection::ConnectDestroyed(void) {
 		channel_->DisableAll();
 		connectionCallback_(shared_from_this());
 	}
+	LOG_TRACE << "Disconnect.";
 	// 从轮询器中删除channel
 	channel_->remove();
 }
@@ -265,6 +266,7 @@ void TcpConnection::HandleRead(Timestamp receive_time) {
 	if (n > 0) {
 		messageCallback_(shared_from_this(), &input_buffer_, receive_time);
 	} else if (n == 0) {
+		LOG_INFO << "No data.";
 		HandleClose();
 	} else {
 		errno = errno_back;
@@ -293,8 +295,7 @@ void TcpConnection::HandleWrite(void) {
 			LOG_SYSERR << "TcpConnection::HandleWrite";
 		}
 	} else {
-		LOG_TRACE << "Connection fd = " << socket_->fd()
-				  << " is down, no more writing";
+		LOG_TRACE << "Connection fd = " << socket_->fd() << " is down, no more writing";
 	}
 }
 
@@ -302,9 +303,10 @@ void TcpConnection::HandleClose(void) {
 	loop_->AssertInLoopThread();
 	LOG_TRACE << "fd = " << channel_->fd() << " state = " << StateToString();
 	assert(state_ == kConnected || state_ == kDisconnecting);
+	set_state(kDisconnected);
 	channel_->DisableAll();
 
-	TcpConnectionPtr guard(this);
+	TcpConnectionPtr guard(shared_from_this());
 	connectionCallback_(guard);
 	closeCallback_(guard);
 }

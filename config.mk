@@ -51,13 +51,13 @@ LIBS_PATH := -L$(ROOT_DIR)/lib -L/usr/local/lib -L/usr/lib
 
 ST_LIBS_UT = #-lgtest
 #-lssl -lcrypto 
-SO_LIBS = -lz -lpthread -ldl -lrt # -lresolv
+SO_LIBS = -lz -lssl -lcrypto -lpthread -ldl -lrt # -lresolv
 
 # 使用poll
 # -DBRSDK_POOL_EN
 
-DMARCROS := -DLANGUAGE_ZH -DWITH_ZLIB -DUSE_EPOLL -DSOFT_VERSION=\"$(RELEASE_VERSION)\" \
-			-DARS_COMPILE_TIME=\""$(COMPILE_TIME)"\" -DBUILD_VERSION="\"$(BUILD_VERSION)"\"
+DMARCROS := -DLANGUAGE_ZH -DWITH_OPENSSL -DWITH_ZLIB -DUSE_EPOLL -DSOFT_VERSION=\"$(RELEASE_VERSION)\" \
+			-DBUILD_VERSION="\"$(BUILD_VERSION)"\"
 
 # 调试模式
 ifeq ($(DEBUG), n)

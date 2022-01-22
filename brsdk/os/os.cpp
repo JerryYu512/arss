@@ -89,7 +89,7 @@ const char *get_processor(void) {
 }
 
 // 获取系统版本
-const char *os_get_version(void) { return uname_info.info_.version; }
+const char *get_version(void) { return uname_info.info_.version; }
 
 int get_ncpu(void) { return sysconf(_SC_NPROCESSORS_CONF); }
 

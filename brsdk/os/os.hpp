@@ -74,7 +74,7 @@ const char *get_platform(void);
  * 
  * @return const char* 名称
  */
-const char *get_name(void);
+const char *get_sysname(void);
 
 /**
  * @brief 获取处理器信息

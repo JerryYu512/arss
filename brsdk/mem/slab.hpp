@@ -54,6 +54,7 @@ public:
     void *alloc(size_t size);
     void free(void *p);
     void stat(slab_stat_t &st);
+    void *address(void);
 
 private:
     MemorySlabImpl *impl_;

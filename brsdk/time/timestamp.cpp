@@ -221,7 +221,7 @@ char* Timestamp::utctime_fmt(time_t time, char* buf, int timezone) {
     timeiso8601_t iso = {
         time,
         0,
-        timezone,
+        static_cast<int16_t>(timezone),
     };
 
     std::string utctime = TimeISO8601(iso).format(0);
