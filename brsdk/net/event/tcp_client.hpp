@@ -47,6 +47,7 @@ namespace net {
 class TcpClient : noncopyable {
 public:
 	TcpClient(EventLoop* loop, const Address& serverAddr, const std::string& nameArgs);
+	TcpClient(EventLoop* loop, const Address& serverAddr, const Address& localAddr, const std::string& nameArgs);
 	~TcpClient();
 
 	// 连接
@@ -76,6 +77,10 @@ public:
 		connectionCallback_ = cb;
 	}
 
+	void SetConnectionFailedCallback(TcpConnectionFailedCallback cb) {
+		connectionFailedCallback_ = cb;
+	}
+
 	// 设置消息接收回调接口
 	void SetMessageCallback(TcpMessageCallbak cb) {
 		messageCallback_ = cb;
@@ -89,6 +94,7 @@ public:
 private:
 	// 新连接，在loop中执行
 	void NewConnection(int sockfd);
+	void FailedConnection(const Address& peer, const Address& local);
 	// 移除连接，在loop中执行
 	void RemoveConnection(const TcpConnectionPtr& conn);
 
@@ -96,6 +102,7 @@ private:
 	TcpConnectorPtr connector_;	///< 连接器
 	const std::string name_;	///< 名称
 	TcpConnectionCallback connectionCallback_;
+	TcpConnectionFailedCallback connectionFailedCallback_;
 	TcpMessageCallbak messageCallback_;
 	TcpWriteCompleteCallbak writeCompleteCallback_;
 	std::atomic_bool retry_;		///< 重连使能

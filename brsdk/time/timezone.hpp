@@ -120,7 +120,7 @@ public:
      * 
      * @return const char* 缩写，eg:CST
      */
-    static const char* TimeZone::timezoneName(void);
+    static const char* timezoneName(void);
 
     struct Data;
 

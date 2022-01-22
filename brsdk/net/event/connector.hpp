@@ -42,11 +42,17 @@ namespace net {
  */
 class Connector : noncopyable, public std::enable_shared_from_this<Connector> {
 public:
+	// TODO:本地地址
 	Connector(EventLoop* loop, const Address& server_addr);
+	Connector(EventLoop* loop, const Address& server_addr, const Address& local_addr);
 	virtual ~Connector();
 
 	void SetNewConnectionCallback(const ConnectorNewConnectionCallback& cb) {
 		newConnectionCallback_ = cb;
+	}
+
+	void SetConnectionFailedCallback(const ConnectorFailedConnCallback& cb) {
+		failedConnectCallback_ = cb;
 	}
 
 	void start(void);
@@ -91,9 +97,12 @@ private:
 	
 	EventLoop* loop_;
 	Address server_addr_;					///< 服务器地址
+	Address local_addr_;					///< 本地地址
 	std::atomic_bool connect_;				///< 是否连接
 	std::atomic<States> state_;				///< 状态
 	std::unique_ptr<EventChannel> channel_;	///< 连接器通道
+	// 连接失败的反馈
+	ConnectorFailedConnCallback failedConnectCallback_;
 	ConnectorNewConnectionCallback newConnectionCallback_;
 	int retry_delayms_;						///< 重连间隔时间
 };

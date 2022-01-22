@@ -4,14 +4,14 @@
  * Copyright © 2021 <wotsen>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the "Software"), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * 
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  * 
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
  * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
@@ -101,6 +101,10 @@ public:
     }
 
     ~MemorySlabImpl() {}
+
+    void *address(void) {
+        return pool_->addr;
+    }
 
     void *alloc(size_t size) {
         void *p;
@@ -226,24 +230,6 @@ public:
 
         st.pool_size = pool_->end - pool_->start;
         st.used_pct = st.used_size * 100 / st.pool_size;
-
-        // SLAB_LOG(INFO) << "pool_size : " << st.pool_size << " bytes\n";
-        // SLAB_LOG(INFO) << "used_size : " << st.used_size << " bytes\n";
-        // SLAB_LOG(INFO) << "used_pct : " << st.used_pct << " bytes\n";
-
-        // SLAB_LOG(INFO) << "total page count : " << st.pages << "\n";
-        // SLAB_LOG(INFO) << "free page count : " << st.free_page << "\n";
-
-        // SLAB_LOG(INFO) << "small slab use page : " << st.p_small
-        //           << ", \tbytes : " << st.b_small << "\n";
-        // SLAB_LOG(INFO) << "exact slab use page : " << st.p_exact
-        //           << ", \tbytes : " << st.b_exact << "\n";
-        // SLAB_LOG(INFO) << "big slab use page : " << st.p_big
-        //           << ", \tbytes : " << st.b_big << "\n";
-        // SLAB_LOG(INFO) << "page slab use page : " << st.p_page
-        //           << ", \tbytes : " << st.b_page << "\n";
-
-        // SLAB_LOG(INFO) << "max free pages : " << st.max_free_pages << "\n";
     }
 
 private:
@@ -864,5 +850,7 @@ void *MemorySlab::alloc(size_t size) { return impl_->alloc(size); }
 void MemorySlab::free(void *p) { impl_->free(p); }
 
 void MemorySlab::stat(slab_stat_t &st) { impl_->stat(st); }
+
+void *MemorySlab::address(void) { return impl_->address(); }
 
 } // namespace brsdk

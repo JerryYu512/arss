@@ -38,12 +38,12 @@ __thread berror_t berrno;
 // 添加linux的errno
 uint64_t bec_add_linux_errno(uint64_t code, int no)
 {
-	return BEC_ADD_ERROR_CODE(BEC_ADD_SUB_CODE(code, BEC_SUB_LINUX_ERR_CODE), no);
+	return BEC_ADD_REAL_ERROR_CODE(BEC_ADD_SUB_CODE(code, BEC_SUB_LINUX_ERR_CODE), no);
 }
 
 uint64_t bec_add_linux_errno(uint64_t code)
 {
-	return BEC_ADD_ERROR_CODE(BEC_ADD_SUB_CODE(code, BEC_SUB_LINUX_ERR_CODE), errno);
+	return BEC_ADD_REAL_ERROR_CODE(BEC_ADD_SUB_CODE(code, BEC_SUB_LINUX_ERR_CODE), errno);
 }
 
 /**

@@ -55,6 +55,7 @@ Acceptor::~Acceptor() {
 	accept_channel_.DisableAll();
 	accept_channel_.remove();
 	::close(idle_fd_);
+	LOG_TRACE << "Release Acceptor";
 }
 
 void Acceptor::listen(void) {
@@ -73,11 +74,13 @@ void Acceptor::HandleRead(void) {
 		if (newConnectionCallback_) {
 			newConnectionCallback_(connfd, peeraddr);
 		} else {
+			LOG_TRACE << "Not need create new connection.";
 			sock_close(connfd);
 		}
 	} else {
 		LOG_SYSERR << "In Acceptor::HandleRead";
 		if (errno == EMFILE) {
+			LOG_DEBUG << strerror(errno);
 			::close(idle_fd_);
 			idle_fd_ = ::accept(accept_socket_.fd(), nullptr, nullptr);
 			::close(idle_fd_);

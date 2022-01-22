@@ -26,6 +26,7 @@
  * @copyright MIT License
  * 
  */
+#include "event_log.hpp"
 #include "poller.hpp"
 #include "poller_poll.hpp"
 #include "poller_epoll.hpp"
@@ -36,8 +37,10 @@ namespace net {
 
 EventPoller* EventPoller::NewDefaultPoller(EventLoop* loop) {
 #ifdef USE_EPOLL
+	LOG_TRACE << "Using epoll.";
 	return new EpollPoller(loop);
 #else
+	LOG_TRACE << "Using poll.";
 	return new PollPoller(loop);
 #endif
 }

@@ -4,14 +4,14 @@
  * Copyright © 2021 <Jerry.Yu>.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- * and associated documentation files (the “Software”), to deal in the Software without
+ * and associated documentation files (the “Software�?), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * 
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
  * 
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * THE SOFTWARE IS PROVIDED “AS IS�?, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
  * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
@@ -96,7 +96,7 @@ void Timer::restart(Timestamp now) {
 	if (repeat_) {
 		expiration_ = addTime(now, interval_);
 	} else {
-		expiration_ = Timestamp::invalid();
+		expiration_ = Timestamp();
 	}
 }
 
@@ -119,14 +119,14 @@ TimerQueue::~TimerQueue() {
 	}
 }
 
-// 添加定时器
+// 添加定时�?
 TimerId TimerQueue::AddTimer(TimerCallback cb, Timestamp when, double interval) {
 	Timer* timer = new Timer(std::move(cb), when, interval);
 	loop_->RunInLoop(std::bind(&TimerQueue::AddTimerInLoop, this, timer));
 	return TimerId(timer, timer->sequence_);
 }
 
-// 取消定时器
+// 取消定时�?
 void TimerQueue::cancel(TimerId timer_id) {
 	loop_->RunInLoop(std::bind(&TimerQueue::CancelInLoop, this, timer_id));
 }
@@ -136,6 +136,7 @@ void TimerQueue::AddTimerInLoop(Timer* timer) {
 	bool earliest_changed = insert(timer);
 
 	if (earliest_changed) {
+		LOG_TRACE << "Earliest changed.";
 		reset_timerfd(timerfd_, timer->expiration_);
 	}
 }

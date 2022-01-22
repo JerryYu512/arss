@@ -41,9 +41,12 @@ const int Connector::kMaxRetryDelayMs = 30 * 1000;
 // 初始重连间隔时间
 const int Connector::kInitRetryDelayMs = 500;
 
-Connector::Connector(EventLoop* loop, const Address& server_addr)
+Connector::Connector(EventLoop* loop, const Address& server_addr) : Connector(loop, server_addr, Address(0)) {}
+
+Connector::Connector(EventLoop* loop, const Address& server_addr, const Address& local_addr)
 	: loop_(loop),
 	  server_addr_(server_addr),
+	  local_addr_(local_addr),
 	  connect_(false),
 	  state_(kDisconnected),
 	  retry_delayms_(kInitRetryDelayMs) {
@@ -93,6 +96,7 @@ void Connector::StopInLoop(void) {
 }
 void Connector::connect(void) {
 	int sockfd = sock_tcp_creat(server_addr_.family());
+	sock_bind(sockfd, local_addr_.ip().c_str(), local_addr_.port());
 	sock_set_nonblock(sockfd, true);
 	int ret = sock_connect(sockfd, *server_addr_.addr());
 	int errno_back = (ret == 0) ? 0 : errno;
@@ -112,11 +116,17 @@ void Connector::connect(void) {
 	case EFAULT:
 	case ENOTSOCK:
 		LOG_SYSERR << "Connect error in Connector::StartInLoop " << errno_back;
+		if (failedConnectCallback_) {
+			failedConnectCallback_(server_addr_, local_addr_);
+		}
 		sock_close(sockfd);
 		break;
 
 	default:
 		LOG_SYSERR << "Unexpected error in Connector::StartInLoop " << errno_back;
+		if (failedConnectCallback_) {
+			failedConnectCallback_(server_addr_, local_addr_);
+		}
 		sock_close(sockfd);
 		break;
 	}
@@ -150,6 +160,9 @@ void Connector::HandleWrite(void) {
 				LOG_TRACE << "Call new connection";
 				newConnectionCallback_(sockfd);
 			} else {
+				if (failedConnectCallback_) {
+					failedConnectCallback_(server_addr_, local_addr_);
+				}
 				sock_close(sockfd);
 			}
 		}
