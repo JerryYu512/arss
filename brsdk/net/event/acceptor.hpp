@@ -32,6 +32,7 @@
 #include "event_channel.hpp"
 #include "brsdk/net/socket/socket.hpp"
 #include "brsdk/net/socket/address.hpp"
+#include "tcp_sock.hpp"
 
 namespace brsdk {
 
